@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI in Education — An Evaluative Framework</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f9f8f5;
+    --card:#ffffff;
+    --text:#1a1a18;
+    --muted:#6b6b65;
+    --dim:#a8a8a0;
+    --border:#e4e2da;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:32px 20px}
+  .page{max-width:940px;margin:0 auto}
+
+  header{margin-bottom:36px}
+  header h1{font-family:'DM Serif Display',serif;font-size:clamp(24px,4vw,38px);font-weight:400;line-height:1.15;margin-bottom:10px}
+  header p{font-size:14px;color:var(--muted);line-height:1.75;max-width:600px}
+  header .byline{margin-top:14px;font-size:11px;color:var(--dim);letter-spacing:.05em;text-transform:uppercase}
+
+  .layout{display:grid;grid-template-columns:228px 1fr;gap:24px;align-items:start}
+  @media(max-width:660px){.layout{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+
+  .app-list{display:flex;flex-direction:column;gap:3px}
+  .app-btn{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 11px;border-radius:8px;
+    border:none;background:transparent;cursor:pointer;
+    text-align:left;width:100%;transition:background .12s;
+  }
+  .app-btn:hover{background:#f2f1ec}
+  .app-btn.sel{background:#eeedf8;outline:1px solid #ccc9ee}
+  .app-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .app-name{font-size:13px;font-weight:500;color:var(--text);line-height:1.35}
+
+  .chart-panel{display:flex;flex-direction:column}
+  #chart{width:100%;max-width:380px;display:block;margin:0 auto}
+
+  .info-block{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+  .info-title{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:6px}
+  .info-desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+
+  .legend{display:flex;flex-direction:column;gap:6px}
+  .leg-row{display:flex;align-items:center;gap:8px}
+  .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .leg-name{font-size:12px;color:var(--muted);flex:1}
+  .leg-pips{display:flex;gap:3px}
+  .pip{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+  .meta-key{margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:600px){.meta-key{grid-template-columns:1fr}}
+  .meta-block{padding:16px 18px;border-radius:10px}
+  .meta-block.teacher{background:#f0f4ff;border:1px solid #d4daf5}
+  .meta-block.trajectory{background:#f4f4f0;border:1px solid var(--border)}
+  .meta-block.student{background:#fff8f0;border:1px solid #f0dfc4}
+  .meta-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+  .meta-label.teacher{color:#4a5bbf}
+  .meta-label.trajectory{color:#6b6b65}
+  .meta-label.student{color:#a05c15}
+  .meta-desc{font-size:12px;color:var(--muted);line-height:1.65}
+
+  .axis-key{margin-top:16px;padding:22px}
+  .axis-key h3{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+  .axis-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 28px}
+  @media(max-width:560px){.axis-grid{grid-template-columns:1fr 1fr}}
+  .axis-def strong{font-size:12px;font-weight:600;display:block;margin-bottom:3px}
+  .axis-def span{font-size:12px;color:var(--muted);line-height:1.6}
+  .axis-def .meta-tag{font-size:10px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;opacity:.65;display:block;margin-bottom:4px}
+  .zone-note{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.75}
+  .zone-note strong{color:var(--text);font-weight:500}
+
+  footer{margin-top:32px;font-size:11px;color:var(--dim);line-height:1.8;text-align:center}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>An Evaluative Framework<br>for AI Use in Education</h1>
+    <p>Not all AI applications in education carry the same risks or offer the same value. This evaluative framework profiles each use type across six dimensions — mapping what each deployment demands of teachers, what student capacity it builds or erodes over time, and how deeply the AI enters the learning experience.</p>
+
+  </header>
+
+  <div class="layout">
+
+    <div class="card">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:10px">Application types</div>
+      <div class="app-list" id="app-list"></div>
+    </div>
+
+    <div class="card chart-panel">
+      <svg id="chart" viewBox="0 0 420 344"></svg>
+      <div class="info-block">
+        <div class="info-title" id="info-title"></div>
+        <div class="info-desc" id="info-desc"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="meta-key">
+    <div class="meta-block teacher">
+      <div class="meta-label teacher">Teacher demand · upper half</div>
+      <div class="meta-desc">What this deployment requires of the professional making and managing it — upstream before use and actively during it.</div>
+    </div>
+    <div class="meta-block trajectory">
+      <div class="meta-label trajectory">Student capacity trajectory · horizontal axis</div>
+      <div class="meta-desc">What sustained use builds or erodes in students over time — AI and tool fluency on the left, disciplinary knowledge on the right. A low score on either pole is a warning.</div>
+    </div>
+    <div class="meta-block student">
+      <div class="meta-label student">Student reach · lower half</div>
+      <div class="meta-desc">How far the AI reaches into the student's learning experience, and what it demands of students once it is there.</div>
+    </div>
+  </div>
+
+  <div class="card axis-key">
+    <h3>Dimension definitions</h3>
+    <div class="axis-grid">
+      <div class="axis-def">
+        <span class="meta-tag" style="color:#4a5bbf">Teacher demand</span>
+        <strong style="color:#7F77DD">Deployment judgment</strong>
+        <span>Expertise required to decide whether and how to deploy AI for a task — exercised upstream, before use begins.</span>
+      </div>
+      <div class="axis-def">
+        <span class="meta-tag" style="color:#4a5bbf">Teacher demand</span>
+        <strong style="color:#1D9E75">Teacher in-use judgment</strong>
+        <span>Active professional discernment the teacher must exercise while the tool is running.</span>
+      </div>
+      <div class="axis-def">
+        <span class="meta-tag" style="color:#6b6b65">Student capacity trajectory</span>
+        <strong style="color:#3B6D11">Tool fluency</strong>
+        <span>Whether sustained use builds transferable AI literacy in students — understanding how these systems behave, where they fail, and how to work with them critically.</span>
+      </div>
+      <div class="axis-def">
+        <span class="meta-tag" style="color:#a05c15">Student reach</span>
+        <strong style="color:#BA7517">Proximity to learning</strong>
+        <span>How directly the AI touches the core acts of instruction, feedback, and assessment.</span>
+      </div>
+      <div class="axis-def">
+        <span class="meta-tag" style="color:#a05c15">Student reach</span>
+        <strong style="color:#378ADD">Student in-use judgment</strong>
+        <span>Critical thinking students must supply to use the tool productively and safely.</span>
+      </div>
+      <div class="axis-def">
+        <span class="meta-tag" style="color:#6b6b65">Student capacity trajectory</span>
+        <strong style="color:#993C1D">Disciplinary knowledge</strong>
+        <span>Whether sustained use builds students' content understanding and disciplinary thinking — the knowledge that belongs to them regardless of what tools they use.</span>
+      </div>
+    </div>
+    <div class="zone-note">
+      <strong>Reading the profile:</strong> The upper half encodes teacher demand — high scores mean significant professional expertise is required. The lower half encodes student reach — how far the AI extends into learning and what it asks of students. The horizontal axis encodes student capacity trajectory — a low score on either pole is a warning that sustained use is substituting for student growth rather than enabling it. The goal is not a high total: it is an <em>honest profile</em>, because you can only govern what you can see.
+    </div>
+  </div>
+
+  <footer>
+    <div style="margin-bottom:16px;color:var(--dim)">
+      Each petal = one dimension &nbsp;·&nbsp; Each arc ring = one point on a 1–5 scale &nbsp;·&nbsp; Filled arcs = scored level &nbsp;·&nbsp; Upper half: teacher demand &nbsp;·&nbsp; Horizontal axis: student capacity trajectory &nbsp;·&nbsp; Lower half: student reach
+    </div>
+    <div style="max-width:600px;margin:0 auto;padding:16px 0 8px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:.03em">Middlesex School &nbsp;·&nbsp; Concord, Massachusetts &nbsp;·&nbsp; March 2026</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--dim);line-height:1.7">© 2026 Mike Harrington. Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" style="color:var(--muted);text-decoration:underline;text-underline-offset:2px">CC BY-NC-SA 4.0</a>. Free to share and adapt for non-commercial purposes with attribution.</div>
+    </div>
+  </footer>
+
+</div>
+<script>
+const DIMS=[
+  {n:'Deployment judgment',     sh:['Deployment','Judgment'],        c:'#7F77DD', a:300},
+  {n:'Teacher in-use judgment', sh:['Teacher In-use','Judgment'],    c:'#1D9E75', a:240},
+  {n:'Tool fluency',            sh:['Build Tool','Fluency'],         c:'#3B6D11', a:180},
+  {n:'Proximity to learning',   sh:['Proximity to','Learning'],      c:'#BA7517', a:60},
+  {n:'Student in-use judgment', sh:['Student In-use','Judgment'],    c:'#378ADD', a:120},
+  {n:'Disciplinary knowledge',  sh:['Build Disciplinary','Knowledge'],c:'#993C1D', a:0},
+];
+
+// scores: [Deployment judgment, Teacher in-use, Tool fluency (student), Proximity, Student in-use, Disciplinary knowledge (student)]
+const APPS=[
+  {n:'Freeform AI chat',            col:'#D85A30', s:[1,1,2,5,5,2],
+   d:'e.g. ChatGPT, Gemini, Claude without scaffolding. Near-zero deployment barrier means risk falls entirely on students. Some AI fluency may develop incidentally, but disciplinary content thinking is bypassed entirely. Neither student capacity pole accumulates in any structured way.'},
+  {n:'Structured AI app',           col:'#EF9F27', s:[4,2,2,3,2,3],
+   d:'e.g. Inference tool, stats formula sheet. Deployment judgment does the protective work upstream. The constraints that make it safe also limit student AI fluency building. Content understanding is reinforced if the tool is well designed — but the ceiling depends heavily on pedagogical intent.'},
+  {n:'Teacher-designed experience', col:'#1D9E75', s:[5,2,3,4,2,4],
+   d:'e.g. Interactive review boards, custom AI tools built for a specific learning goal. Pedagogical design is the point — content understanding is built intentionally. Tool fluency builds at a moderate level depending on how explicitly students are asked to engage with AI as a medium.'},
+  {n:'Guardrailed AI tutor',        col:'#378ADD', s:[3,2,2,4,3,4],
+   d:'e.g. Khanmigo-style Socratic tools. The Socratic design actively builds disciplinary understanding. Guardrails that make it safe also limit authentic AI fluency — students interact with a constrained surface, not the underlying system. Deployment must be intentional to maintain both.'},
+  {n:'Task streamlining',           col:'#888780', s:[2,4,1,2,1,3],
+   d:'e.g. Drafting rubrics, parent communications, generating worked examples. Peripheral to students — they benefit indirectly from higher teacher quality and better-designed materials. Neither student capacity pole is directly engaged; the disciplinary knowledge score reflects that the teacher\'s preserved expertise serves students over time.'},
+  {n:'AI curriculum partner',       col:'#534AB7', s:[5,5,2,3,1,5],
+   d:'e.g. Designing curricula, assessment sequences, and pedagogical frameworks with AI. Not directly student-facing at the point of interaction, so student tool fluency does not build here. Disciplinary knowledge scores highest — the tool exists to deepen student content learning, and the teacher\'s rigorous authorship is the mechanism.'},
+  {n:'High Value task automation',  col:'#A32D2D', s:[2,1,1,5,1,1],
+   d:'e.g. Automated essay grading, algorithmic intervention flags. Highly proximate to learning, with professional judgment absent at every stage. Students receive outputs rather than interacting with AI — tool fluency does not build. Disciplinary knowledge is directly at risk: the acts of assessment and diagnosis that generate understanding are performed by the system, not worked through by students or teachers.'},
+];
+
+let sel=1;
+const cx=210, cy=172, R=[50,63,76,89,102], SW=9, SP=46;
+
+function rad(d){return d*Math.PI/180}
+function arc(r,sa,ea){
+  const x1=cx+r*Math.cos(rad(sa)), y1=cy+r*Math.sin(rad(sa));
+  const x2=cx+r*Math.cos(rad(ea)), y2=cy+r*Math.sin(rad(ea));
+  return`M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+
+function draw(){
+  const app=APPS[sel];
+  let s='';
+
+  // Zone fills — upper (teacher demand) blue tint, lower (student reach) amber tint
+  s+=`<path d="M${cx+114} ${cy} A114 114 0 0 0 ${cx-114} ${cy} Z" fill="rgba(74,91,191,0.04)"/>`;
+  s+=`<path d="M${cx+114} ${cy} A114 114 0 0 1 ${cx-114} ${cy} Z" fill="rgba(160,92,21,0.04)"/>`;
+
+  // Capacity trajectory axis — solid line with arrowheads, no center label
+  const axL=cx-130, axR=cx+130;
+  s+=`<line x1="${axL+6}" y1="${cy}" x2="${axR-6}" y2="${cy}" stroke="#ccc9be" stroke-width="1.2"/>`;
+  s+=`<polygon points="${axL+6},${cy-3} ${axL},${cy} ${axL+6},${cy+3}" fill="#ccc9be"/>`;
+  s+=`<polygon points="${axR-6},${cy-3} ${axR},${cy} ${axR-6},${cy+3}" fill="#ccc9be"/>`;
+
+  // Zone labels
+  s+=`<text x="${cx}" y="20" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="500" letter-spacing=".06em" fill="#9090c0">TEACHER DEMAND</text>`;
+  s+=`<text x="${cx}" y="333" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="500" letter-spacing=".06em" fill="#c09050">STUDENT REACH</text>`;
+
+  // Petals + two-line labels
+  for(let i=0;i<6;i++){
+    const ca=DIMS[i].a, sa=ca-SP/2, ea=ca+SP/2, score=app.s[i];
+    for(let l=0;l<5;l++){
+      s+=`<path d="${arc(R[l],sa,ea)}" fill="none" stroke="${DIMS[i].c}" stroke-width="${SW}" stroke-linecap="round" opacity="${l<score?0.88:0.08}"/>`;
+    }
+    const lr=126, la=rad(ca);
+    const lx=cx+lr*Math.cos(la);
+    let ly=cy+lr*Math.sin(la);
+    const cosA=Math.cos(la);
+    let an=Math.abs(cosA)<0.22?'middle':cosA>0?'start':'end';
+    // Horizontal axis labels: nudge up to clear axis line, two lines stacked above
+    const isHoriz=Math.abs(cosA)>0.9;
+    const lines=Array.isArray(DIMS[i].sh)?DIMS[i].sh:[DIMS[i].sh];
+    const lineH=11; // line height in px
+    // For horizontal dims, anchor both lines above the axis; for others, centre vertically
+    if(isHoriz){
+      // stack lines so bottom of last line sits 6px above axis
+      const totalH=lines.length*lineH;
+      const topY=ly-totalH-4;
+      s+=`<text text-anchor="${an}" font-family="DM Sans,sans-serif" font-size="9" font-weight="500" fill="${DIMS[i].c}">`;
+      lines.forEach((ln,j)=>{
+        s+=`<tspan x="${lx.toFixed(2)}" y="${(topY+j*lineH).toFixed(2)}">${ln}</tspan>`;
+      });
+      s+=`</text>`;
+    } else {
+      // Centre the block vertically around ly
+      const totalH=(lines.length-1)*lineH;
+      const topY=ly-totalH/2;
+      s+=`<text text-anchor="${an}" font-family="DM Sans,sans-serif" font-size="9" font-weight="500" fill="${DIMS[i].c}">`;
+      lines.forEach((ln,j)=>{
+        s+=`<tspan x="${lx.toFixed(2)}" y="${(topY+j*lineH).toFixed(2)}" dominant-baseline="central">${ln}</tspan>`;
+      });
+      s+=`</text>`;
+    }
+  }
+
+  // Center dot
+  s+=`<circle cx="${cx}" cy="${cy}" r="3.5" fill="#d4d0c8"/>`;
+
+  document.getElementById('chart').innerHTML=s;
+  document.getElementById('info-title').textContent=app.n;
+  document.getElementById('info-desc').textContent=app.d;
+  document.getElementById('legend').innerHTML=DIMS.map((d,i)=>{
+    const sc=app.s[i];
+    const pips=Array.from({length:5},(_,j)=>`<span class="pip" style="background:${d.c};opacity:${j<sc?0.88:0.1}"></span>`).join('');
+    return`<div class="leg-row"><div class="leg-dot" style="background:${d.c}"></div><div class="leg-name">${d.n}</div><div class="leg-pips">${pips}</div></div>`;
+  }).join('');
+}
+
+const list=document.getElementById('app-list');
+APPS.forEach((app,i)=>{
+  const b=document.createElement('button');
+  b.className='app-btn'+(i===sel?' sel':'');
+  b.innerHTML=`<span class="app-dot" style="background:${app.col}"></span><span class="app-name">${app.n}</span>`;
+  b.onclick=()=>{sel=i;document.querySelectorAll('.app-btn').forEach((x,j)=>x.classList.toggle('sel',j===i));draw();};
+  list.appendChild(b);
+});
+draw();
+</script>
+</body>
+</html>
