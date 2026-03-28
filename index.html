@@ -143,7 +143,7 @@
       <div class="axis-def">
         <span class="meta-tag" style="color:#a05c15">Student reach</span>
         <strong style="color:#BA7517">Proximity to learning</strong>
-        <span>How directly the AI touches the core acts of instruction, feedback, and assessment.</span>
+        <span>How directly the AI touches the core acts of instruction, learning, feedback, and assessment.</span>
       </div>
       <div class="axis-def">
         <span class="meta-tag" style="color:#a05c15">Student reach</span>
@@ -157,13 +157,13 @@
       </div>
     </div>
     <div class="zone-note">
-      <strong>Reading the profile:</strong> The upper half encodes teacher demand — high scores mean significant professional expertise is required. The lower half encodes student reach — how far the AI extends into learning and what it asks of students. The horizontal axis encodes student capacity trajectory — a low score on either pole is a warning that sustained use is substituting for student growth rather than enabling it. The goal is not a high total: it is an <em>honest profile</em>, because you can only govern what you can see.
+      <strong>Reading the profile:</strong> The upper half encodes teacher demand — high scores mean significant professional expertise is required. The lower half encodes AI's reach — how far the AI extends into learning, what it demands of students, and the risks it opens up. The horizontal axis encodes student capacity trajectory. The aim is not to encourage the use of applications with high total scores, but to encourage teacher judgement when considering the dimensions of an application in balance.
     </div>
   </div>
 
   <footer>
     <div style="margin-bottom:16px;color:var(--dim)">
-      Each petal = one dimension &nbsp;·&nbsp; Each arc ring = one point on a 1–5 scale &nbsp;·&nbsp; Filled arcs = scored level &nbsp;·&nbsp; Upper half: teacher demand &nbsp;·&nbsp; Horizontal axis: student capacity trajectory &nbsp;·&nbsp; Lower half: student reach
+      Each petal = one dimension &nbsp;·&nbsp; Each arc ring = one point on a 1–5 scale &nbsp;·&nbsp; Filled arcs = scored level &nbsp;·&nbsp; Upper half: teacher demand &nbsp;·&nbsp; Horizontal axis: student capacity trajectory &nbsp;·&nbsp; Lower half: student exposure
     </div>
     <div style="max-width:600px;margin:0 auto;padding:16px 0 8px;border-top:1px solid var(--border)">
       <div style="font-size:11px;color:var(--muted);letter-spacing:.03em">Middlesex School &nbsp;·&nbsp; Concord, Massachusetts &nbsp;·&nbsp; March 2026</div>
@@ -185,11 +185,11 @@ const DIMS=[
 // scores: [Deployment judgment, Teacher in-use, Tool fluency (student), Proximity, Student in-use, Disciplinary knowledge (student)]
 const APPS=[
   {n:'Freeform AI chat',            col:'#D85A30', s:[1,1,2,5,5,2],
-   d:'e.g. ChatGPT, Gemini, Claude without scaffolding. Near-zero deployment barrier means risk falls entirely on students. Some AI fluency may develop incidentally, but disciplinary content thinking is bypassed entirely. Neither student capacity pole accumulates in any structured way.'},
+   d:'e.g. ChatGPT, Gemini, Claude without scaffolding. Near-zero deployment barrier means risk falls entirely on students. AI fluency may develop from interfacing directly with tools, but disciplinary content thinking can be bypassed entirely. Neither student capacity pole accumulates in any structured way.'},
   {n:'Structured AI app',           col:'#EF9F27', s:[4,2,2,3,2,3],
-   d:'e.g. Inference tool, stats formula sheet. Deployment judgment does the protective work upstream. The constraints that make it safe also limit student AI fluency building. Content understanding is reinforced if the tool is well designed — but the ceiling depends heavily on pedagogical intent.'},
-  {n:'Teacher-designed experience', col:'#1D9E75', s:[5,2,3,4,2,4],
-   d:'e.g. Interactive review boards, custom AI tools built for a specific learning goal. Pedagogical design is the point — content understanding is built intentionally. Tool fluency builds at a moderate level depending on how explicitly students are asked to engage with AI as a medium.'},
+   d:'Classroom activities or Apps that make strategic calls to AI. Deployment judgment does the protective work upstream. The constraints that make it safe also limit student AI fluency building. Content understanding is reinforced if the tool is well designed — but the ceiling depends heavily on pedagogical intent.'},
+  {n:'AI co-designed experience', col:'#1D9E75', s:[5,2,1,4,1,1],
+   d:'e.g. Interactive learning tools, built with AI but no AI on the student end. Pedagogically designed to build content knowlege intentionally. The student's learning experience is enabled by AI but AI is not enabled during the experience.'},
   {n:'Guardrailed AI tutor',        col:'#378ADD', s:[3,2,2,4,3,4],
    d:'e.g. Khanmigo-style Socratic tools. The Socratic design actively builds disciplinary understanding. Guardrails that make it safe also limit authentic AI fluency — students interact with a constrained surface, not the underlying system. Deployment must be intentional to maintain both.'},
   {n:'Task streamlining',           col:'#888780', s:[2,4,1,2,1,3],
