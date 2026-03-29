@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Use Reflection Protocol</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f9f8f5;
+    --card:#ffffff;
+    --text:#1a1a18;
+    --muted:#6b6b65;
+    --dim:#a8a8a0;
+    --border:#e4e2da;
+    --accent:#534AB7;
+    --accent-light:#eeedf8;
+    --accent-border:#ccc9ee;
+    --warm:#a05c15;
+    --warm-light:#fff8f0;
+    --warm-border:#f0dfc4;
+  }
+
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:32px 20px}
+  .page{max-width:680px;margin:0 auto}
+
+  header{margin-bottom:36px}
+  .kicker{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+  header h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,34px);font-weight:400;line-height:1.15;margin-bottom:12px}
+  header p{font-size:13px;color:var(--muted);line-height:1.75;max-width:560px}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;margin-bottom:16px}
+
+  .section-label{
+    font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    margin-bottom:18px;display:flex;align-items:center;gap:8px
+  }
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  .stem-group{display:flex;flex-direction:column;gap:20px}
+  .stem{display:flex;flex-direction:column;gap:6px}
+  .stem-text{font-size:14px;color:var(--text);line-height:1.6;font-weight:400}
+  .stem-text em{font-style:italic;color:var(--muted)}
+
+  textarea{
+    width:100%;min-height:52px;resize:vertical;
+    border:1px solid var(--border);border-radius:8px;
+    padding:10px 12px;
+    font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+    background:var(--bg);line-height:1.6;
+    transition:border-color .15s,box-shadow .15s;outline:none;
+  }
+  textarea:focus{border-color:#9d98d8;box-shadow:0 0 0 3px rgba(83,74,183,0.08)}
+  textarea::placeholder{color:var(--dim);font-style:italic}
+
+  .artifact-card{
+    background:var(--warm-light);border:1px solid var(--warm-border);
+    border-radius:14px;padding:26px;margin-bottom:16px;
+  }
+  .artifact-card .section-label{color:var(--warm)}
+  .artifact-card .section-label::after{background:var(--warm-border)}
+  .artifact-card textarea{background:#fff}
+  .artifact-card textarea:focus{border-color:#d4965a;box-shadow:0 0 0 3px rgba(160,92,21,0.08)}
+
+  .mode-toggle{
+    display:flex;gap:0;margin-bottom:20px;
+    border:1px solid var(--warm-border);border-radius:8px;overflow:hidden;
+  }
+  .mode-btn{
+    flex:1;padding:8px 12px;border:none;background:transparent;
+    font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
+    color:var(--muted);cursor:pointer;transition:background .12s,color .12s;
+    line-height:1.4;text-align:center;
+  }
+  .mode-btn:first-child{border-right:1px solid var(--warm-border)}
+  .mode-btn.active{background:var(--warm);color:#fff}
+  .mode-btn:not(.active):hover{background:#fdf0e0}
+
+  .share-panel{display:none}
+  .share-panel.visible{display:block}
+
+  .private-preview{display:flex;flex-direction:column;gap:14px}
+  .preview-row{display:flex;flex-direction:column;gap:4px}
+  .preview-q{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--warm);opacity:.7}
+  .preview-a{
+    font-size:13px;color:var(--muted);line-height:1.7;
+    padding:10px 12px;background:#fff;border:1px solid var(--warm-border);border-radius:8px;
+    min-height:36px;font-style:italic;
+  }
+  .preview-a.empty{color:var(--dim)}
+
+  .artifact-preview{
+    margin-top:16px;padding:18px 20px;
+    background:#fff;border:1px solid var(--warm-border);border-radius:10px;
+    display:none;
+  }
+  .artifact-preview.visible{display:block}
+  .artifact-preview-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+  .artifact-line{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:6px}
+  .artifact-line strong{color:var(--text);font-weight:500}
+  .artifact-statement{
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--warm-border);
+    font-size:13px;color:var(--text);line-height:1.7;font-style:italic
+  }
+
+  .btn{
+    padding:8px 16px;border-radius:8px;border:none;cursor:pointer;
+    font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+    letter-spacing:.03em;transition:opacity .12s,transform .1s;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--warm);color:#fff}
+  .btn-primary:hover{opacity:.88}
+  .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--muted)}
+  .btn-secondary:hover{background:var(--bg)}
+
+  .btn-row{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .action-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+  .reset-row{margin-top:8px;text-align:center}
+  .reset-link{font-size:11px;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px;border:none;background:none}
+  .reset-link:hover{color:var(--muted)}
+
+  footer{margin-top:28px;font-size:11px;color:var(--dim);line-height:1.8;text-align:center;padding-top:20px;border-top:1px solid var(--border)}
+
+  @media print{
+    body{background:#fff;padding:20px}
+    .card,.artifact-card{box-shadow:none;border:1px solid #ddd}
+    .mode-toggle,.btn-row,.action-row,.reset-row{display:none!important}
+    textarea{border:1px solid #ddd;min-height:36px}
+    .artifact-preview{display:block!important}
+    .share-panel{display:block!important}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="kicker">AI in Education · Companion to the Evaluative Framework</div>
+    <h1>AI Use<br>Reflection Protocol</h1>
+    <p>Five prompts to complete after any AI-assisted task. The private section is for you. The shareable statement is for anyone who receives your work.</p>
+  </header>
+
+  <div class="card">
+    <div class="section-label" style="color:var(--accent)">Private reflection</div>
+    <p style="font-size:12px;color:var(--dim);line-height:1.65;margin-bottom:18px;padding:10px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:8px">Your responses are not saved or transmitted. Nothing leaves this page unless you choose to share it.</p>
+    <div class="stem-group">
+
+      <div class="stem">
+        <div class="stem-text">The moment I stopped driving and started following the AI was&nbsp;<em>…</em></div>
+        <textarea id="s1" placeholder="or: this didn't happen because…" rows="2"></textarea>
+      </div>
+
+      <div class="stem">
+        <div class="stem-text">Something the AI produced that I changed, pushed back on, or discarded was&nbsp;<em>…</em></div>
+        <textarea id="s2" placeholder="or: I didn't push back, and that concerns me / doesn't concern me because…" rows="2"></textarea>
+      </div>
+
+      <div class="stem">
+        <div class="stem-text">The part of this work that is genuinely mine — that came from my own thinking — is&nbsp;<em>…</em></div>
+        <textarea id="s3" rows="2"></textarea>
+      </div>
+
+      <div class="stem">
+        <div class="stem-text">If I had to do a similar task tomorrow without AI, I would / wouldn't be able to&nbsp;<em>…</em>&nbsp;because&nbsp;<em>…</em></div>
+        <textarea id="s4" rows="2"></textarea>
+      </div>
+
+      <div class="stem">
+        <div class="stem-text">The one thing I'm prepared to stand behind in this work — and explain, if asked — is&nbsp;<em>…</em></div>
+        <textarea id="s5" rows="2"></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="artifact-card">
+    <div class="section-label">Shareable statement</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:6px">A brief disclosure to attach to submitted work. Write a polished version, or share your private reflection as-is.</p>
+    <p style="font-size:12px;color:var(--dim);line-height:1.65;margin-bottom:18px">Only what you copy or print leaves this page.</p>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-polished" onclick="setMode('polished')">Write a statement</button>
+      <button class="mode-btn" id="btn-private" onclick="setMode('private')">Share my private reflection</button>
+    </div>
+
+    <!-- Polished statement -->
+    <div class="share-panel visible" id="panel-polished">
+      <div class="stem-group">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="stem">
+            <div class="stem-text" style="font-size:13px">Name</div>
+            <textarea id="a-name" placeholder="Your name" rows="1" style="min-height:38px;resize:none"></textarea>
+          </div>
+          <div class="stem">
+            <div class="stem-text" style="font-size:13px">Date</div>
+            <textarea id="a-date" placeholder="e.g. March 28, 2026" rows="1" style="min-height:38px;resize:none"></textarea>
+          </div>
+        </div>
+        <div class="stem">
+          <div class="stem-text" style="font-size:13px">Course or context <span style="font-weight:400;color:var(--dim)">(optional)</span></div>
+          <textarea id="a-course" placeholder="e.g. AP English, Faculty PD, Curriculum planning…" rows="1" style="min-height:38px;resize:none"></textarea>
+        </div>
+        <div class="stem">
+          <div class="stem-text" style="font-size:13px">The task</div>
+          <textarea id="a-task" placeholder="e.g. First draft of an essay, curriculum unit outline, parent letter…" rows="1"></textarea>
+        </div>
+        <div class="stem">
+          <div class="stem-text" style="font-size:13px">How I used AI</div>
+          <textarea id="a-how" placeholder="e.g. Generated an initial outline; I restructured and rewrote substantially…" rows="2"></textarea>
+        </div>
+        <div class="stem">
+          <div class="stem-text" style="font-size:13px">My contribution to this work</div>
+          <textarea id="a-contrib" placeholder="e.g. The framing, the argument, and all the domain-specific judgment are mine…" rows="2"></textarea>
+        </div>
+        <div class="stem">
+          <div class="stem-text" style="font-size:13px">What I stand behind</div>
+          <textarea id="a-stand" placeholder="The one sentence you'd put your name on…" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="action-row" style="margin-top:16px">
+        <button class="btn btn-primary" onclick="copyPolished(event)">Copy statement</button>
+        <button class="btn btn-secondary" onclick="printPolished()">Print / save as PDF</button>
+      </div>
+      <div id="polished-name-error" style="display:none;margin-top:8px;font-size:12px;color:#a32d2d">Please add your name before sharing.</div>
+    </div>
+
+    <!-- Share private reflection -->
+    <div class="share-panel" id="panel-private">
+      <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px">Your private reflection will be shared as-is. Blank responses appear as not answered.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="stem">
+          <div class="stem-text" style="font-size:13px">Name</div>
+          <textarea id="b-name" placeholder="Your name" rows="1" style="min-height:38px;resize:none;background:#fff"></textarea>
+        </div>
+        <div class="stem">
+          <div class="stem-text" style="font-size:13px">Date</div>
+          <textarea id="b-date" placeholder="e.g. March 28, 2026" rows="1" style="min-height:38px;resize:none;background:#fff"></textarea>
+        </div>
+      </div>
+      <div class="stem" style="margin-bottom:16px">
+        <div class="stem-text" style="font-size:13px">Course or context <span style="font-weight:400;color:var(--dim)">(optional)</span></div>
+        <textarea id="b-course" placeholder="e.g. AP English, Faculty PD, Curriculum planning…" rows="1" style="min-height:38px;resize:none;background:#fff"></textarea>
+      </div>
+      <div class="private-preview" id="private-preview">
+        <div class="preview-row">
+          <div class="preview-q">The moment I stopped driving</div>
+          <div class="preview-a empty" id="pp-s1">—</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-q">Something I changed or pushed back on</div>
+          <div class="preview-a empty" id="pp-s2">—</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-q">What's genuinely mine</div>
+          <div class="preview-a empty" id="pp-s3">—</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-q">If I did this tomorrow without AI</div>
+          <div class="preview-a empty" id="pp-s4">—</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-q">What I stand behind</div>
+          <div class="preview-a empty" id="pp-s5">—</div>
+        </div>
+      </div>
+      <div class="action-row" style="margin-top:16px">
+        <button class="btn btn-primary" onclick="copyPrivate(event)">Copy reflection</button>
+        <button class="btn btn-secondary" onclick="printPrivate()">Print / save as PDF</button>
+      </div>
+      <div id="private-name-error" style="display:none;margin-top:8px;font-size:12px;color:#a32d2d">Please add your name before sharing.</div>
+    </div>
+
+  </div>
+
+  <div class="reset-row">
+    <button class="reset-link" onclick="clearAll()">Clear all responses</button>
+  </div>
+
+  <footer>
+    <div style="max-width:500px;margin:0 auto;padding-bottom:8px">
+      <div style="margin-bottom:6px">Companion to <em>An Evaluative Framework for AI Use in Education</em></div>
+      <div>Middlesex School · Concord, Massachusetts · March 2026</div>
+      <div style="margin-top:8px">© 2026 Mike Harrington. Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" style="color:var(--muted);text-decoration:underline;text-underline-offset:2px">CC BY-NC-SA 4.0</a>.</div>
+    </div>
+  </footer>
+
+</div>
+<script>
+let currentMode = 'polished';
+
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('btn-polished').classList.toggle('active', mode==='polished');
+  document.getElementById('btn-private').classList.toggle('active', mode==='private');
+  document.getElementById('panel-polished').classList.toggle('visible', mode==='polished');
+  document.getElementById('panel-private').classList.toggle('visible', mode==='private');
+  if(mode==='private') refreshPrivatePreview();
+}
+
+function refreshPrivatePreview(){
+  const map = {s1:'The moment I stopped driving',s2:'Something I changed or pushed back on',s3:"What's genuinely mine",s4:'If I did this tomorrow without AI',s5:'What I stand behind'};
+  Object.keys(map).forEach(id=>{
+    const val = document.getElementById(id).value.trim();
+    const el  = document.getElementById('pp-'+id);
+    el.textContent = val || '—';
+    el.classList.toggle('empty', !val);
+  });
+}
+
+['s1','s2','s3','s4','s5'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    if(currentMode==='private') refreshPrivatePreview();
+  });
+});
+
+function nameError(errorId, nameVal){
+  const err = document.getElementById(errorId);
+  if(!nameVal){ err.style.display='block'; return false; }
+  err.style.display='none'; return true;
+}
+
+function buildPolishedText(){
+  const name    = document.getElementById('a-name').value.trim();
+  const date    = document.getElementById('a-date').value.trim()    || '(not provided)';
+  const course  = document.getElementById('a-course').value.trim();
+  const task    = document.getElementById('a-task').value.trim()    || '(not specified)';
+  const how     = document.getElementById('a-how').value.trim()     || '(not specified)';
+  const contrib = document.getElementById('a-contrib').value.trim() || '(not specified)';
+  const stand   = document.getElementById('a-stand').value.trim()   || '(not completed)';
+  const courseLine = course ? `\nCourse: ${course}` : '';
+  return `AI Use Statement\n\nName: ${name}  |  Date: ${date}${courseLine}\n\nTask: ${task}\nAI use: ${how}\nMy contribution: ${contrib}\n\nStatement: ${stand}`;
+}
+
+function copyPolished(e){
+  const name = document.getElementById('a-name').value.trim();
+  if(!nameError('polished-name-error', name)) return;
+  copyText(buildPolishedText(), e.target);
+}
+
+function printPolished(){
+  const name = document.getElementById('a-name').value.trim();
+  if(!nameError('polished-name-error', name)) return;
+  window.print();
+}
+
+function buildPrivateText(){
+  const name   = document.getElementById('b-name').value.trim();
+  const date   = document.getElementById('b-date').value.trim()   || '(not provided)';
+  const course = document.getElementById('b-course').value.trim();
+  const courseLine = course ? `\nCourse: ${course}` : '';
+  const rows = [
+    ['The moment I stopped driving',          document.getElementById('s1').value.trim() || '—'],
+    ['Something I changed or pushed back on', document.getElementById('s2').value.trim() || '—'],
+    ["What's genuinely mine",               document.getElementById('s3').value.trim() || '—'],
+    ['If I did this tomorrow without AI',     document.getElementById('s4').value.trim() || '—'],
+    ['What I stand behind',                   document.getElementById('s5').value.trim() || '—'],
+  ];
+  return `AI Use Reflection\n\nName: ${name}  |  Date: ${date}${courseLine}\n\n` + rows.map(([q,a])=>`${q}:\n${a}`).join('\n\n');
+}
+
+function copyPrivate(e){
+  refreshPrivatePreview();
+  const name = document.getElementById('b-name').value.trim();
+  if(!nameError('private-name-error', name)) return;
+  copyText(buildPrivateText(), e.target);
+}
+
+function printPrivate(){
+  const name = document.getElementById('b-name').value.trim();
+  if(!nameError('private-name-error', name)) return;
+  window.print();
+}
+
+function copyText(text, btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(()=>btn.textContent = orig, 1800);
+  });
+}
+
+function clearAll(){
+  if(!confirm('Clear all responses?')) return;
+  ['s1','s2','s3','s4','s5','a-name','a-date','a-course','a-task','a-how','a-contrib','a-stand','b-name','b-date','b-course'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  ['polished-name-error','private-name-error'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  if(currentMode==='private') refreshPrivatePreview();
+}
+</script>
+</body>
+</html>
