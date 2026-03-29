@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Score Your Application — AI in Education Framework</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f9f8f5;
+    --card:#ffffff;
+    --text:#1a1a18;
+    --muted:#6b6b65;
+    --dim:#a8a8a0;
+    --border:#e4e2da;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:32px 20px}
+  .page{max-width:1080px;margin:0 auto}
+
+  /* Nav */
+  .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+  .back-link{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;transition:color .12s}
+  .back-link:hover{color:var(--text)}
+  .back-link svg{opacity:.5}
+
+  /* Header */
+  .page-header{margin-bottom:32px}
+  .page-header h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,34px);font-weight:400;line-height:1.15;margin-bottom:8px}
+  .page-header p{font-size:13px;color:var(--muted);line-height:1.75;max-width:560px}
+
+  /* Two-col layout */
+  .scorer-layout{display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start}
+  @media(max-width:800px){.scorer-layout{grid-template-columns:1fr}}
+
+  /* Sticky chart panel */
+  .chart-col{position:sticky;top:24px}
+  @media(max-width:800px){.chart-col{position:static;order:-1}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+
+  /* Context fields */
+  .context-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+  @media(max-width:500px){.context-grid{grid-template-columns:1fr}}
+  .field-group{display:flex;flex-direction:column;gap:5px}
+  .field-group label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+  .field-group input,.field-group textarea{
+    font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+    background:var(--bg);border:1px solid var(--border);border-radius:8px;
+    padding:8px 10px;outline:none;transition:border-color .12s;resize:none;
+  }
+  .field-group input:focus,.field-group textarea:focus{border-color:#b0acd8}
+  .field-group.wide{grid-column:1/-1}
+
+  /* Dimension sections */
+  .dim-section{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .dim-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+
+  .dim-zone{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px}
+  .dim-name{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;line-height:1.2;margin-bottom:5px}
+  .dim-def{font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:14px;font-style:italic}
+
+  /* Anchor options */
+  .anchors{display:flex;flex-direction:column;gap:6px}
+  .anchor-btn{
+    display:flex;align-items:baseline;gap:10px;
+    padding:9px 12px;border-radius:8px;border:1px solid var(--border);
+    background:var(--card);cursor:pointer;text-align:left;width:100%;
+    transition:background .1s, border-color .1s;
+  }
+  .anchor-btn:hover{background:#f5f4f0;border-color:#d0cec6}
+  .anchor-btn.sel{border-color:var(--dim-color);background:var(--dim-bg)}
+  .anchor-num{font-size:11px;font-weight:600;color:var(--dim-color,var(--dim));flex-shrink:0;min-width:14px;opacity:.8}
+  .anchor-text{font-size:12px;color:var(--muted);line-height:1.6}
+  .anchor-btn.sel .anchor-text{color:var(--text)}
+
+  /* Chart */
+  #score-chart{width:100%;display:block}
+  .chart-title{font-family:'DM Serif Display',serif;font-size:16px;font-weight:400;margin-bottom:4px}
+  .chart-subtitle{font-size:11px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+
+  /* Score summary in chart panel */
+  .score-summary{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+  .score-row{display:flex;align-items:center;gap:8px}
+  .score-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .score-name{font-size:11px;color:var(--muted);flex:1}
+  .score-pips{display:flex;gap:2px}
+  .pip{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+  /* Export bar */
+  .export-bar{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+  .export-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:2px}
+  .export-btns{display:flex;flex-direction:column;gap:5px}
+  .export-btn{
+    display:flex;align-items:center;gap:7px;
+    padding:7px 10px;border-radius:7px;border:1px solid var(--border);
+    background:var(--bg);font-family:'DM Sans',sans-serif;font-size:12px;
+    font-weight:500;color:var(--text);cursor:pointer;text-align:left;
+    transition:background .12s;width:100%;
+  }
+  .export-btn:hover{background:#f2f1ec}
+  .export-btn svg{opacity:.45;flex-shrink:0}
+  .export-btn.copied{color:#1D9E75;border-color:#1D9E75}
+
+  /* Unscored hint */
+  .hint{font-size:11px;color:var(--dim);font-style:italic;margin-top:8px;line-height:1.5}
+
+  /* Print styles */
+  @media print{
+    body{padding:16px;background:#fff}
+    .nav,.export-bar{display:none}
+    .scorer-layout{display:block}
+    .chart-col{position:static;margin-bottom:24px}
+    .card{border:none;padding:0}
+    .anchor-btn{border-color:#ddd}
+    .anchor-btn.sel{border-color:#999;background:#f5f5f5}
+    .page-header p{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="nav">
+    <a href="index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to framework
+    </a>
+  </nav>
+
+  <div class="page-header">
+    <h1>Score your application</h1>
+    <p>Work through each dimension and click the description that best fits your deployment. The profile chart updates as you score. No single number summarises the result — the shape is what matters.</p>
+  </div>
+
+  <div class="scorer-layout">
+
+    <!-- LEFT: form -->
+    <div>
+      <div class="card" style="margin-bottom:20px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:12px">Context</div>
+        <div class="context-grid">
+          <div class="field-group wide">
+            <label>Tool or activity</label>
+            <input type="text" id="ctx-tool" placeholder="e.g. Khanmigo, AI essay feedback, formula sheet…" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label>Grade level / Subject</label>
+            <input type="text" id="ctx-grade" placeholder="e.g. Grade 10 · Chemistry" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label>Evaluator</label>
+            <input type="text" id="ctx-eval" placeholder="" autocomplete="off">
+          </div>
+          <div class="field-group wide">
+            <label>Student population context</label>
+            <input type="text" id="ctx-pop" placeholder="e.g. Mixed prior attainment, first use of AI tools" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="dim-form"></div>
+    </div>
+
+    <!-- RIGHT: sticky chart -->
+    <div class="chart-col">
+      <div class="card">
+        <div class="chart-title" id="chart-tool-name">Your profile</div>
+        <div class="chart-subtitle" id="chart-hint">Select scores on the left to build your profile.</div>
+        <svg id="score-chart" viewBox="0 0 300 260"></svg>
+        <div class="score-summary" id="score-summary"></div>
+        <div class="export-bar">
+          <div class="export-label">Export</div>
+          <div class="export-btns">
+            <button class="export-btn" id="btn-share" onclick="shareURL()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="10.5" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="10.5" cy="10.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="2.5" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 5.8l5-2.6M4 7.2l5 2.6" stroke="currentColor" stroke-width="1.3"/></svg>
+              Copy shareable link
+            </button>
+            <button class="export-btn" onclick="downloadSVG()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 5.5l3 3 3-3M2 10.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Download chart as SVG
+            </button>
+            <button class="export-btn" onclick="window.print()">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="4.5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M4 4.5V2.5h5V4.5M4 8.5h5M4 10.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Print / Save as PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer style="margin-top:32px;font-size:11px;color:var(--dim);line-height:1.8;text-align:center">
+    <div style="max-width:600px;margin:0 auto;padding:16px 0 8px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:.03em">Middlesex School &nbsp;·&nbsp; Concord, Massachusetts &nbsp;·&nbsp; March 2026</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--dim);line-height:1.7">© 2026 Mike Harrington. Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" style="color:var(--muted);text-decoration:underline;text-underline-offset:2px">CC BY-NC-SA 4.0</a>. Free to share and adapt for non-commercial purposes with attribution.</div>
+    </div>
+  </footer>
+
+</div>
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+const DIMS = [
+  {
+    n: 'Deployment Judgment',
+    zone: 'Teacher Responsibility',
+    zoneColor: '#4a5bbf',
+    c: '#7F77DD',
+    bg: '#f0effe',
+    a: 300,
+    sh: ['Deployment','Judgment'],
+    def: 'Expertise required to decide whether and how to deploy AI for this task — exercised before use begins.',
+    anchors: [
+      'Any teacher could deploy this without specialized preparation.',
+      'Requires some familiarity with the tool; basic pedagogical awareness.',
+      'Requires meaningful understanding of both the tool and its instructional fit.',
+      'Requires deep pedagogical judgment about when and how AI belongs in this context.',
+      'Requires expert-level judgment: technical, pedagogical, and contextual — expert teachers only.'
+    ]
+  },
+  {
+    n: 'Teacher In-Use Judgment',
+    zone: 'Teacher Responsibility',
+    zoneColor: '#4a5bbf',
+    c: '#1D9E75',
+    bg: '#edfaf4',
+    a: 240,
+    sh: ['Teacher In-use','Judgment'],
+    def: 'Active professional discernment the teacher must exercise while the tool is running.',
+    anchors: [
+      'Teacher can step away entirely; no active oversight needed.',
+      'Occasional check-ins sufficient; most of the time the tool runs itself.',
+      'Teacher monitors regularly and intervenes when something looks off.',
+      'Teacher is actively reading outputs, redirecting, and making real-time calls throughout.',
+      'Continuous high-stakes judgment required — every output demands professional interpretation before reaching students.'
+    ]
+  },
+  {
+    n: 'Tool Fluency',
+    zone: 'Student Capacity Trajectory',
+    zoneColor: '#6b6b65',
+    c: '#3B6D11',
+    bg: '#f0f5ea',
+    a: 180,
+    sh: ['Build Tool','Fluency'],
+    def: 'Whether sustained use builds transferable AI literacy in students — understanding how these systems behave, where they fail, and how to work with them critically.',
+    anchors: [
+      'Students have no meaningful contact with AI; no fluency builds.',
+      'Students interact with a highly constrained or abstracted interface; minimal transferable learning.',
+      'Students engage with AI in limited ways; some habits of mind may develop.',
+      'Students regularly interact with AI outputs and must evaluate them; genuine fluency develops over time.',
+      'Students work directly with AI, develop critical habits around verification and interpretation, building transferable literacy.'
+    ]
+  },
+  {
+    n: 'Proximity to Learning',
+    zone: 'Exposure',
+    zoneColor: '#a05c15',
+    c: '#BA7517',
+    bg: '#fdf5e8',
+    a: 60,
+    sh: ['Proximity to','Learning'],
+    def: 'How directly the AI touches the core acts of instruction, learning, feedback, and assessment.',
+    anchors: [
+      'AI is entirely peripheral to the student experience; no contact with instruction or feedback.',
+      'AI touches the edges of learning — scheduling, logistics, resource access — but not the core.',
+      'AI is present in some learning moments but is not the primary vehicle.',
+      'AI regularly mediates instruction or feedback in meaningful ways.',
+      'AI is the primary medium through which instruction, feedback, or assessment is delivered.'
+    ]
+  },
+  {
+    n: 'Student In-Use Judgment',
+    zone: 'Exposure',
+    zoneColor: '#a05c15',
+    c: '#378ADD',
+    bg: '#edf5fd',
+    a: 120,
+    sh: ['Student In-use','Judgment'],
+    def: 'Critical thinking students must supply to use the tool productively and safely.',
+    anchors: [
+      'Students are passive recipients; no active judgment required or possible.',
+      'Students make minimal evaluative decisions; the tool scaffolds most choices.',
+      'Students must exercise some discernment — selecting, comparing, or verifying outputs.',
+      'Students are regularly required to evaluate AI outputs against their own understanding.',
+      'Students must apply sustained critical judgment at every step; passive use would be actively harmful.'
+    ]
+  },
+  {
+    n: 'Disciplinary Knowledge',
+    zone: 'Student Capacity Trajectory',
+    zoneColor: '#6b6b65',
+    c: '#993C1D',
+    bg: '#fdf0ec',
+    a: 0,
+    sh: ['Build Disciplinary','Knowledge'],
+    def: 'Whether sustained use builds students\' content understanding and disciplinary thinking — knowledge that belongs to them regardless of what tools they use.',
+    anchors: [
+      'The tool performs the disciplinary thinking for students; knowledge-building is bypassed entirely.',
+      'Little disciplinary engagement; students interact with outputs more than ideas.',
+      'Some knowledge-building occurs alongside AI use, depending on pedagogical intent.',
+      'The tool is designed to prompt and reinforce disciplinary thinking; content understanding deepens over time.',
+      'Disciplinary knowledge is the explicit aim; sustained use predictably builds content understanding and ways of thinking.'
+    ]
+  }
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const scores = [0, 0, 0, 0, 0, 0]; // 0 = unscored
+
+// ── Build form ────────────────────────────────────────────────────────────────
+const form = document.getElementById('dim-form');
+DIMS.forEach((dim, di) => {
+  const sec = document.createElement('div');
+  sec.className = 'dim-section';
+  sec.innerHTML = `
+    <div class="dim-zone" style="color:${dim.zoneColor}">${dim.zone}</div>
+    <div class="dim-name" style="color:${dim.c}">${dim.n}</div>
+    <div class="dim-def">${dim.def}</div>
+    <div class="anchors" id="anchors-${di}"></div>
+  `;
+  form.appendChild(sec);
+
+  const anchorsEl = sec.querySelector(`#anchors-${di}`);
+  dim.anchors.forEach((text, ai) => {
+    const btn = document.createElement('button');
+    btn.className = 'anchor-btn';
+    btn.style.setProperty('--dim-color', dim.c);
+    btn.style.setProperty('--dim-bg', dim.bg);
+    btn.innerHTML = `<span class="anchor-num" style="color:${dim.c}">${ai + 1}</span><span class="anchor-text">${text}</span>`;
+    btn.onclick = () => {
+      scores[di] = ai + 1;
+      anchorsEl.querySelectorAll('.anchor-btn').forEach((b, j) => b.classList.toggle('sel', j === ai));
+      updateAll();
+    };
+    anchorsEl.appendChild(btn);
+  });
+});
+
+// Context fields → URL update
+['ctx-tool','ctx-grade','ctx-eval','ctx-pop'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateURL);
+});
+
+// ── Chart drawing ─────────────────────────────────────────────────────────────
+const cx = 150, cy = 130, R = [30, 42, 54, 66, 78], SW = 7, SP = 46;
+
+function rad(d) { return d * Math.PI / 180; }
+function arc(r, sa, ea) {
+  const x1 = cx + r * Math.cos(rad(sa)), y1 = cy + r * Math.sin(rad(sa));
+  const x2 = cx + r * Math.cos(rad(ea)), y2 = cy + r * Math.sin(rad(ea));
+  return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+
+function drawChart() {
+  let s = '';
+
+  // Zone fills
+  s += `<path d="M${cx+92} ${cy} A92 92 0 0 0 ${cx-92} ${cy} Z" fill="rgba(74,91,191,0.04)"/>`;
+  s += `<path d="M${cx+92} ${cy} A92 92 0 0 1 ${cx-92} ${cy} Z" fill="rgba(160,92,21,0.04)"/>`;
+
+  // Equator
+  const axL = cx - 100, axR = cx + 100;
+  s += `<line x1="${axL+5}" y1="${cy}" x2="${axR-5}" y2="${cy}" stroke="#ccc9be" stroke-width="1"/>`;
+  s += `<polygon points="${axL+5},${cy-2.5} ${axL},${cy} ${axL+5},${cy+2.5}" fill="#ccc9be"/>`;
+  s += `<polygon points="${axR-5},${cy-2.5} ${axR},${cy} ${axR-5},${cy+2.5}" fill="#ccc9be"/>`;
+
+  // Zone labels
+  s += `<text x="${cx}" y="14" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" font-weight="600" letter-spacing=".07em" fill="#9090c0">TEACHER RESPONSIBILITY</text>`;
+  s += `<text x="${cx}" y="252" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" font-weight="600" letter-spacing=".07em" fill="#c09050">EXPOSURE</text>`;
+
+  // Petals
+  for (let i = 0; i < 6; i++) {
+    const ca = DIMS[i].a, sa = ca - SP/2, ea = ca + SP/2;
+    const score = scores[i];
+    for (let l = 0; l < 5; l++) {
+      s += `<path d="${arc(R[l], sa, ea)}" fill="none" stroke="${DIMS[i].c}" stroke-width="${SW}" stroke-linecap="round" opacity="${l < score ? 0.88 : 0.08}"/>`;
+    }
+    // Labels
+    const lr = 96, la = rad(ca);
+    const lx = cx + lr * Math.cos(la);
+    const ly = cy + lr * Math.sin(la);
+    const cosA = Math.cos(la);
+    const an = Math.abs(cosA) < 0.22 ? 'middle' : cosA > 0 ? 'start' : 'end';
+    const lines = DIMS[i].sh;
+    const lineH = 9;
+    const isHoriz = Math.abs(cosA) > 0.9;
+    if (isHoriz) {
+      const totalH = lines.length * lineH;
+      const topY = ly - totalH - 2;
+      s += `<text text-anchor="${an}" font-family="DM Sans,sans-serif" font-size="7.5" font-weight="500" fill="${DIMS[i].c}">`;
+      lines.forEach((ln, j) => { s += `<tspan x="${lx.toFixed(2)}" y="${(topY + j * lineH).toFixed(2)}">${ln}</tspan>`; });
+      s += `</text>`;
+    } else {
+      const totalH = (lines.length - 1) * lineH;
+      const topY = ly - totalH / 2;
+      s += `<text text-anchor="${an}" font-family="DM Sans,sans-serif" font-size="7.5" font-weight="500" fill="${DIMS[i].c}">`;
+      lines.forEach((ln, j) => { s += `<tspan x="${lx.toFixed(2)}" y="${(topY + j * lineH).toFixed(2)}" dominant-baseline="central">${ln}</tspan>`; });
+      s += `</text>`;
+    }
+  }
+
+  s += `<circle cx="${cx}" cy="${cy}" r="3" fill="#d4d0c8"/>`;
+  document.getElementById('score-chart').innerHTML = s;
+}
+
+// ── Score summary pips ────────────────────────────────────────────────────────
+function drawSummary() {
+  const el = document.getElementById('score-summary');
+  el.innerHTML = DIMS.map((d, i) => {
+    const sc = scores[i];
+    const pips = Array.from({length: 5}, (_, j) =>
+      `<span class="pip" style="background:${d.c};opacity:${j < sc ? 0.88 : 0.1}"></span>`
+    ).join('');
+    return `<div class="score-row">
+      <div class="score-dot" style="background:${d.c}"></div>
+      <div class="score-name">${d.n}</div>
+      <div class="score-pips">${pips}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Chart title ───────────────────────────────────────────────────────────────
+function updateChartTitle() {
+  const tool = document.getElementById('ctx-tool').value.trim();
+  document.getElementById('chart-tool-name').textContent = tool || 'Your profile';
+  const scored = scores.filter(s => s > 0).length;
+  document.getElementById('chart-hint').textContent = scored === 0
+    ? 'Select scores on the left to build your profile.'
+    : scored === 6
+    ? 'Profile complete.'
+    : `${scored} of 6 dimensions scored.`;
+}
+
+// ── URL encoding ──────────────────────────────────────────────────────────────
+function updateURL() {
+  const params = new URLSearchParams();
+  const tool  = document.getElementById('ctx-tool').value.trim();
+  const grade = document.getElementById('ctx-grade').value.trim();
+  const eval_ = document.getElementById('ctx-eval').value.trim();
+  const pop   = document.getElementById('ctx-pop').value.trim();
+  if (tool)  params.set('tool', tool);
+  if (grade) params.set('grade', grade);
+  if (eval_) params.set('eval', eval_);
+  if (pop)   params.set('pop', pop);
+  const scoreStr = scores.join(',');
+  if (scoreStr !== '0,0,0,0,0,0') params.set('s', scoreStr);
+  const newURL = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+  history.replaceState(null, '', newURL);
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tool'))  document.getElementById('ctx-tool').value  = params.get('tool');
+  if (params.get('grade')) document.getElementById('ctx-grade').value = params.get('grade');
+  if (params.get('eval'))  document.getElementById('ctx-eval').value  = params.get('eval');
+  if (params.get('pop'))   document.getElementById('ctx-pop').value   = params.get('pop');
+  if (params.get('s')) {
+    const parts = params.get('s').split(',').map(Number);
+    parts.forEach((v, i) => {
+      if (i < 6 && v >= 1 && v <= 5) {
+        scores[i] = v;
+        const anchors = document.querySelectorAll(`#anchors-${i} .anchor-btn`);
+        anchors.forEach((b, j) => b.classList.toggle('sel', j === v - 1));
+      }
+    });
+  }
+}
+
+// ── Export: share ─────────────────────────────────────────────────────────────
+function shareURL() {
+  updateURL();
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('btn-share');
+    btn.classList.add('copied');
+    btn.querySelector('span') ? btn.querySelector('span').textContent = 'Link copied!' : null;
+    const spans = btn.querySelectorAll('*');
+    btn.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = n.textContent.replace('Copy shareable link','Link copied!'); });
+    btn.innerHTML = btn.innerHTML.replace('Copy shareable link', 'Link copied!');
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = btn.innerHTML.replace('Link copied!', 'Copy shareable link');
+    }, 2000);
+  });
+}
+
+// ── Export: SVG download ──────────────────────────────────────────────────────
+function downloadSVG() {
+  const svgEl = document.getElementById('score-chart');
+  const tool = document.getElementById('ctx-tool').value.trim() || 'profile';
+  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const blob = new Blob([svgData], {type: 'image/svg+xml'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ai-framework-${tool.replace(/\s+/g,'-').toLowerCase()}.svg`;
+  a.click();
+}
+
+// ── Update all ────────────────────────────────────────────────────────────────
+function updateAll() {
+  drawChart();
+  drawSummary();
+  updateChartTitle();
+  updateURL();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadFromURL();
+updateAll();
+</script>
+</body>
+</html>
