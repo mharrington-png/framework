@@ -141,7 +141,7 @@
   <header>
     <div class="kicker">AI in Education · Companion to the Evaluative Framework</div>
     <h1>AI Use<br>Reflection Protocol</h1>
-    <p>Five prompts to complete after any AI-assisted task. The private section is for you. The shareable statement is for anyone who receives your work.</p>
+    <p>Three prompts to complete after any AI-assisted task. The private section is for you. The shareable statement is for anyone who receives your work.</p>
   </header>
 
   <div class="card">
@@ -155,11 +155,6 @@
       </div>
 
       <div class="stem">
-        <div class="stem-text">Something the AI produced that I changed, pushed back on, or discarded was&nbsp;<em>…</em></div>
-        <textarea id="s2" placeholder="or: I didn't push back, and that concerns me / doesn't concern me because…" rows="2"></textarea>
-      </div>
-
-      <div class="stem">
         <div class="stem-text">The part of this work that is genuinely mine — that came from my own thinking — is&nbsp;<em>…</em></div>
         <textarea id="s3" rows="2"></textarea>
       </div>
@@ -167,11 +162,6 @@
       <div class="stem">
         <div class="stem-text">If I had to do a similar task tomorrow without AI, I would / wouldn't be able to&nbsp;<em>…</em>&nbsp;because&nbsp;<em>…</em></div>
         <textarea id="s4" rows="2"></textarea>
-      </div>
-
-      <div class="stem">
-        <div class="stem-text">The one thing I'm prepared to stand behind in this work — and explain, if asked — is&nbsp;<em>…</em></div>
-        <textarea id="s5" rows="2"></textarea>
       </div>
 
     </div>
@@ -216,10 +206,7 @@
           <div class="stem-text" style="font-size:13px">My contribution to this work</div>
           <textarea id="a-contrib" placeholder="e.g. The framing, the argument, and all the domain-specific judgment are mine…" rows="2"></textarea>
         </div>
-        <div class="stem">
-          <div class="stem-text" style="font-size:13px">What I stand behind</div>
-          <textarea id="a-stand" placeholder="The one sentence you'd put your name on…" rows="2"></textarea>
-        </div>
+
       </div>
       <div class="action-row" style="margin-top:16px">
         <button class="btn btn-primary" onclick="copyPolished(event)">Copy statement</button>
@@ -251,20 +238,12 @@
           <div class="preview-a empty" id="pp-s1">—</div>
         </div>
         <div class="preview-row">
-          <div class="preview-q">Something I changed or pushed back on</div>
-          <div class="preview-a empty" id="pp-s2">—</div>
-        </div>
-        <div class="preview-row">
           <div class="preview-q">What's genuinely mine</div>
           <div class="preview-a empty" id="pp-s3">—</div>
         </div>
         <div class="preview-row">
           <div class="preview-q">If I did this tomorrow without AI</div>
           <div class="preview-a empty" id="pp-s4">—</div>
-        </div>
-        <div class="preview-row">
-          <div class="preview-q">What I stand behind</div>
-          <div class="preview-a empty" id="pp-s5">—</div>
         </div>
       </div>
       <div class="action-row" style="margin-top:16px">
@@ -302,7 +281,7 @@ function setMode(mode){
 }
 
 function refreshPrivatePreview(){
-  const map = {s1:'The moment I stopped driving',s2:'Something I changed or pushed back on',s3:"What's genuinely mine",s4:'If I did this tomorrow without AI',s5:'What I stand behind'};
+  const map = {s1:'The moment I stopped driving',s3:"What's genuinely mine",s4:'If I did this tomorrow without AI'};
   Object.keys(map).forEach(id=>{
     const val = document.getElementById(id).value.trim();
     const el  = document.getElementById('pp-'+id);
@@ -311,7 +290,7 @@ function refreshPrivatePreview(){
   });
 }
 
-['s1','s2','s3','s4','s5'].forEach(id=>{
+['s1','s3','s4'].forEach(id=>{
   document.getElementById(id).addEventListener('input', ()=>{
     if(currentMode==='private') refreshPrivatePreview();
   });
@@ -330,9 +309,8 @@ function buildPolishedText(){
   const task    = document.getElementById('a-task').value.trim()    || '(not specified)';
   const how     = document.getElementById('a-how').value.trim()     || '(not specified)';
   const contrib = document.getElementById('a-contrib').value.trim() || '(not specified)';
-  const stand   = document.getElementById('a-stand').value.trim()   || '(not completed)';
   const courseLine = course ? `\nCourse: ${course}` : '';
-  return `AI Use Statement\n\nName: ${name}  |  Date: ${date}${courseLine}\n\nTask: ${task}\nAI use: ${how}\nMy contribution: ${contrib}\n\nStatement: ${stand}`;
+  return `AI Use Statement\n\nName: ${name}  |  Date: ${date}${courseLine}\n\nTask: ${task}\nAI use: ${how}\nMy contribution: ${contrib}`;
 }
 
 function copyPolished(e){
@@ -353,11 +331,9 @@ function buildPrivateText(){
   const course = document.getElementById('b-course').value.trim();
   const courseLine = course ? `\nCourse: ${course}` : '';
   const rows = [
-    ['The moment I stopped driving',          document.getElementById('s1').value.trim() || '—'],
-    ['Something I changed or pushed back on', document.getElementById('s2').value.trim() || '—'],
-    ["What's genuinely mine",               document.getElementById('s3').value.trim() || '—'],
-    ['If I did this tomorrow without AI',     document.getElementById('s4').value.trim() || '—'],
-    ['What I stand behind',                   document.getElementById('s5').value.trim() || '—'],
+    ['The moment I stopped driving',      document.getElementById('s1').value.trim() || '—'],
+    ["What's genuinely mine",           document.getElementById('s3').value.trim() || '—'],
+    ['If I did this tomorrow without AI', document.getElementById('s4').value.trim() || '—'],
   ];
   return `AI Use Reflection\n\nName: ${name}  |  Date: ${date}${courseLine}\n\n` + rows.map(([q,a])=>`${q}:\n${a}`).join('\n\n');
 }
@@ -385,7 +361,7 @@ function copyText(text, btn){
 
 function clearAll(){
   if(!confirm('Clear all responses?')) return;
-  ['s1','s2','s3','s4','s5','a-name','a-date','a-course','a-task','a-how','a-contrib','a-stand','b-name','b-date','b-course'].forEach(id=>{
+  ['s1','s3','s4','a-name','a-date','a-course','a-task','a-how','a-contrib','b-name','b-date','b-course'].forEach(id=>{
     document.getElementById(id).value='';
   });
   ['polished-name-error','private-name-error'].forEach(id=>{

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Read Your Profile — AI in Education Framework</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f9f8f5;
+    --card:#ffffff;
+    --text:#1a1a18;
+    --muted:#6b6b65;
+    --dim:#a8a8a0;
+    --border:#e4e2da;
+    --teacher:#4a5bbf;
+    --teacher-bg:#f0f4ff;
+    --teacher-border:#d4daf5;
+    --exposure:#a05c15;
+    --exposure-bg:#fff8f0;
+    --exposure-border:#f0dfc4;
+    --traj:#6b6b65;
+    --traj-bg:#f4f4f0;
+    --warn:#b83232;
+    --warn-bg:#fff5f5;
+    --warn-border:#f5c8c8;
+    --ok:#1D9E75;
+    --ok-bg:#f0faf6;
+    --ok-border:#b8e8d8;
+    --note:#7F77DD;
+    --note-bg:#f4f3ff;
+    --note-border:#dddaff;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:32px 20px}
+  .page{max-width:860px;margin:0 auto}
+
+  /* Nav */
+  .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;gap:12px;flex-wrap:wrap}
+  .back-link{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;transition:color .12s}
+  .back-link:hover{color:var(--text)}
+  .back-link svg{opacity:.5}
+  .nav-actions{display:flex;gap:8px}
+  .nav-btn{
+    display:flex;align-items:center;gap:6px;
+    padding:6px 12px;border-radius:7px;border:1px solid var(--border);
+    background:var(--card);font-family:'DM Sans',sans-serif;font-size:12px;
+    font-weight:500;color:var(--muted);cursor:pointer;text-decoration:none;
+    transition:background .12s,color .12s;
+  }
+  .nav-btn:hover{background:#f2f1ec;color:var(--text)}
+  .nav-btn svg{opacity:.5}
+
+  /* Header */
+  .page-header{margin-bottom:28px}
+  .page-header h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,34px);font-weight:400;line-height:1.15;margin-bottom:6px}
+  .page-header p{font-size:13px;color:var(--muted);line-height:1.75;max-width:520px}
+
+  /* Empty state */
+  .empty-state{text-align:center;padding:64px 32px;background:var(--card);border:1px solid var(--border);border-radius:14px}
+  .empty-state h2{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:10px}
+  .empty-state p{font-size:13px;color:var(--muted);line-height:1.75;max-width:400px;margin:0 auto 24px}
+  .primary-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:9px 18px;border-radius:8px;
+    background:var(--text);color:#fff;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+    text-decoration:none;border:none;cursor:pointer;transition:opacity .12s;
+  }
+  .primary-btn:hover{opacity:.82}
+
+  /* Main layout */
+  .main-layout{display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start}
+  @media(max-width:700px){.main-layout{grid-template-columns:1fr}}
+
+  /* Chart panel */
+  .chart-panel{position:sticky;top:24px}
+  @media(max-width:700px){.chart-panel{position:static}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+  .chart-tool-name{font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;margin-bottom:3px;line-height:1.3}
+  .chart-context{font-size:11px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+  #interp-chart{width:100%;display:block}
+
+  /* Score summary */
+  .score-summary{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
+  .score-row{display:flex;align-items:center;gap:7px}
+  .score-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .score-name{font-size:11px;color:var(--muted);flex:1;line-height:1.3}
+  .score-pips{display:flex;gap:2px}
+  .pip{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+  /* Rescore link */
+  .rescore-link{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+  .rescore-link a{font-size:11px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .12s}
+  .rescore-link a:hover{color:var(--text)}
+
+  /* Interpretation panel */
+  .interp-panel{display:flex;flex-direction:column;gap:16px}
+
+  /* Shape summary card */
+  .shape-card{border-radius:14px;padding:22px 24px;border:1px solid var(--border)}
+  .shape-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+  .shape-name{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;line-height:1.2;margin-bottom:10px}
+  .shape-desc{font-size:13px;line-height:1.75;color:var(--muted)}
+
+  /* Appropriateness panels */
+  .apt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.apt-grid{grid-template-columns:1fr}}
+  .apt-col{border-radius:10px;padding:16px 18px;border:1px solid}
+  .apt-col.ok{background:var(--ok-bg);border-color:var(--ok-border)}
+  .apt-col.warn{background:var(--warn-bg);border-color:var(--warn-border)}
+  .apt-col-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+  .apt-col.ok .apt-col-label{color:#1a7a5a}
+  .apt-col.warn .apt-col-label{color:var(--warn)}
+  .apt-list{display:flex;flex-direction:column;gap:7px}
+  .apt-item{display:flex;align-items:baseline;gap:8px}
+  .apt-marker{font-size:11px;font-weight:700;flex-shrink:0;line-height:1.65}
+  .apt-col.ok .apt-marker{color:#1a7a5a}
+  .apt-col.warn .apt-marker{color:var(--warn)}
+  .apt-text{font-size:12px;color:var(--muted);line-height:1.65}
+
+  /* Questions section */
+  .questions-card{border-radius:14px;padding:22px 24px;background:var(--card);border:1px solid var(--border)}
+  .section-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+  .q-list{display:flex;flex-direction:column;gap:10px}
+  .q-item{display:flex;gap:10px;padding:12px 14px;background:var(--bg);border-radius:8px;border:1px solid var(--border)}
+  .q-num{font-size:11px;font-weight:600;color:var(--dim);flex-shrink:0;padding-top:1px;min-width:16px}
+  .q-text{font-size:13px;color:var(--text);line-height:1.65}
+
+  /* Governance note */
+  .gov-card{border-radius:10px;padding:16px 18px;background:var(--traj-bg);border:1px solid var(--border)}
+  .gov-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--traj);margin-bottom:6px}
+  .gov-text{font-size:12px;color:var(--muted);line-height:1.7}
+  .gov-text strong{color:var(--text);font-weight:500}
+
+  /* Dimension flags */
+  .dim-flags{display:flex;flex-direction:column;gap:6px}
+  .dim-flag{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--border)}
+  .dim-flag-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+  .dim-flag-content{}
+  .dim-flag-name{font-size:12px;font-weight:600;margin-bottom:2px}
+  .dim-flag-note{font-size:12px;color:var(--muted);line-height:1.6}
+
+  footer{margin-top:32px;font-size:11px;color:var(--dim);line-height:1.8;text-align:center}
+  @media print{.nav,.rescore-link{display:none}.chart-panel{position:static}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="nav">
+    <a href="index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to framework
+    </a>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="window.print()">
+        <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="2" y="4.5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M4 4.5V2.5h5V4.5M4 8.5h5M4 10.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Print
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Read your profile</h1>
+    <p>An interpretation of the shape your scoring produced — what it signals, what it leaves open, and what to ask before deploying.</p>
+  </div>
+
+  <div id="empty-state" style="display:none">
+    <div class="empty-state">
+      <h2>No profile loaded</h2>
+      <p>This tool reads a completed scoring session. Score your application first, then follow the link to interpret your profile.</p>
+      <a href="score.html" class="primary-btn">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7M3.5 5.5l3 3 3-3M2 10.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Score an application
+      </a>
+    </div>
+  </div>
+
+  <div id="main-content" style="display:none">
+    <div class="main-layout">
+
+      <!-- LEFT: sticky chart -->
+      <div class="chart-panel">
+        <div class="card">
+          <div class="chart-tool-name" id="chart-tool-name">Profile</div>
+          <div class="chart-context" id="chart-context"></div>
+          <svg id="interp-chart" viewBox="0 0 260 220"></svg>
+          <div class="score-summary" id="score-summary"></div>
+          <div class="rescore-link">
+            <a href="#" id="rescore-link">
+              <svg width="11" height="11" viewBox="0 0 13 13" fill="none"><path d="M2 6.5A4.5 4.5 0 0 1 9.5 3M11 6.5A4.5 4.5 0 0 1 3.5 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M7.5 1.5l2 1.5-2 1.5M5.5 11.5l-2-1.5 2-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit scores
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: interpretation -->
+      <div class="interp-panel" id="interp-panel"></div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div style="max-width:600px;margin:0 auto;padding:16px 0 8px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:.03em">Middlesex School &nbsp;·&nbsp; Concord, Massachusetts &nbsp;·&nbsp; March 2026</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--dim);line-height:1.7">© 2026 Mike Harrington. Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" style="color:var(--muted);text-decoration:underline;text-underline-offset:2px">CC BY-NC-SA 4.0</a>. Free to share and adapt for non-commercial purposes with attribution.</div>
+    </div>
+  </footer>
+
+</div>
+<script>
+// ── Dimension definitions (mirrors score.html exactly) ────────────────────────
+const DIMS = [
+  { n:'Deployment Judgment',     sh:['Deployment','Judgment'],         c:'#7F77DD', a:300, zone:'Teacher Responsibility' },
+  { n:'Teacher In-Use Judgment', sh:['Teacher In-use','Judgment'],     c:'#1D9E75', a:240, zone:'Teacher Responsibility' },
+  { n:'Tool Fluency',            sh:['Build Tool','Fluency'],          c:'#3B6D11', a:180, zone:'Student Capacity Trajectory' },
+  { n:'Proximity to Learning',   sh:['Proximity to','Learning'],       c:'#BA7517', a:60,  zone:'Exposure' },
+  { n:'Student In-Use Judgment', sh:['Student In-use','Judgment'],     c:'#378ADD', a:120, zone:'Exposure' },
+  { n:'Disciplinary Knowledge',  sh:['Build Disciplinary','Knowledge'], c:'#993C1D', a:0,   zone:'Student Capacity Trajectory' },
+];
+// Index aliases
+const D=0, T=1, F=2, P=3, S=4, K=5;
+
+// ── Chart constants ───────────────────────────────────────────────────────────
+const cx=130, cy=110, R=[24,34,44,54,64], SW=6, SP=46;
+
+// ── Parse URL ─────────────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const rawS = params.get('s');
+const tool  = params.get('tool')  || '';
+const grade = params.get('grade') || '';
+const eval_ = params.get('eval')  || '';
+const pop   = params.get('pop')   || '';
+
+let scores = [0,0,0,0,0,0];
+let hasProfile = false;
+if (rawS) {
+  const parts = rawS.split(',').map(Number);
+  if (parts.length === 6 && parts.every(v => v >= 1 && v <= 5)) {
+    scores = parts;
+    hasProfile = true;
+  }
+}
+
+if (!hasProfile) {
+  document.getElementById('empty-state').style.display = 'block';
+} else {
+  document.getElementById('main-content').style.display = 'block';
+  render();
+}
+
+// ── Chart drawing ─────────────────────────────────────────────────────────────
+function rad(d){ return d*Math.PI/180; }
+function arc(r,sa,ea){
+  const x1=cx+r*Math.cos(rad(sa)), y1=cy+r*Math.sin(rad(sa));
+  const x2=cx+r*Math.cos(rad(ea)), y2=cy+r*Math.sin(rad(ea));
+  return `M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+
+function drawChart(){
+  let s='';
+  s+=`<path d="M${cx+78} ${cy} A78 78 0 0 0 ${cx-78} ${cy} Z" fill="rgba(74,91,191,0.04)"/>`;
+  s+=`<path d="M${cx+78} ${cy} A78 78 0 0 1 ${cx-78} ${cy} Z" fill="rgba(160,92,21,0.04)"/>`;
+  const axL=cx-86, axR=cx+86;
+  s+=`<line x1="${axL+5}" y1="${cy}" x2="${axR-5}" y2="${cy}" stroke="#ccc9be" stroke-width="1"/>`;
+  s+=`<polygon points="${axL+5},${cy-2.5} ${axL},${cy} ${axL+5},${cy+2.5}" fill="#ccc9be"/>`;
+  s+=`<polygon points="${axR-5},${cy-2.5} ${axR},${cy} ${axR-5},${cy+2.5}" fill="#ccc9be"/>`;
+  s+=`<text x="${cx}" y="11" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6.5" font-weight="600" letter-spacing=".07em" fill="#9090c0">TEACHER RESPONSIBILITY</text>`;
+  s+=`<text x="${cx}" y="213" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6.5" font-weight="600" letter-spacing=".07em" fill="#c09050">EXPOSURE</text>`;
+  for(let i=0;i<6;i++){
+    const ca=DIMS[i].a, sa=ca-SP/2, ea=ca+SP/2, score=scores[i];
+    for(let l=0;l<5;l++){
+      s+=`<path d="${arc(R[l],sa,ea)}" fill="none" stroke="${DIMS[i].c}" stroke-width="${SW}" stroke-linecap="round" opacity="${l<score?0.88:0.08}"/>`;
+    }
+    const lr=81, la=rad(ca);
+    const lx=cx+lr*Math.cos(la);
+    let ly=cy+lr*Math.sin(la);
+    const cosA=Math.cos(la);
+    const an=Math.abs(cosA)<0.22?'middle':cosA>0?'start':'end';
+    const lines=DIMS[i].sh, lineH=8.5;
+    const isHoriz=Math.abs(cosA)>0.9;
+    if(isHoriz){
+      const totalH=lines.length*lineH;
+      const topY=ly-totalH-2;
+      s+=`<text text-anchor="${an}" font-family="DM Sans,sans-serif" font-size="6.5" font-weight="500" fill="${DIMS[i].c}">`;
+      lines.forEach((ln,j)=>{ s+=`<tspan x="${lx.toFixed(2)}" y="${(topY+j*lineH).toFixed(2)}">${ln}</tspan>`; });
+      s+=`</text>`;
+    } else {
+      const totalH=(lines.length-1)*lineH;
+      const topY=ly-totalH/2;
+      s+=`<text text-anchor="${an}" font-family="DM Sans,sans-serif" font-size="6.5" font-weight="500" fill="${DIMS[i].c}">`;
+      lines.forEach((ln,j)=>{ s+=`<tspan x="${lx.toFixed(2)}" y="${(topY+j*lineH).toFixed(2)}" dominant-baseline="central">${ln}</tspan>`; });
+      s+=`</text>`;
+    }
+  }
+  s+=`<circle cx="${cx}" cy="${cy}" r="2.5" fill="#d4d0c8"/>`;
+  document.getElementById('interp-chart').innerHTML=s;
+}
+
+function drawSummary(){
+  const el=document.getElementById('score-summary');
+  el.innerHTML=DIMS.map((d,i)=>{
+    const sc=scores[i];
+    const pips=Array.from({length:5},(_,j)=>
+      `<span class="pip" style="background:${d.c};opacity:${j<sc?0.88:0.1}"></span>`
+    ).join('');
+    return `<div class="score-row">
+      <div class="score-dot" style="background:${d.c}"></div>
+      <div class="score-name">${d.n}</div>
+      <div class="score-pips">${pips}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Interpretation logic ──────────────────────────────────────────────────────
+
+function upperAvg(){ return (scores[D]+scores[T])/2; }
+function lowerAvg(){ return (scores[P]+scores[S])/2; }
+function trajectoryMin(){ return Math.min(scores[F], scores[K]); }
+function imbalance(){ return lowerAvg() - upperAvg(); }
+function judgmentGap(){ return lowerAvg() - scores[D]; }
+function totalAvg(){ return scores.reduce((a,b)=>a+b,0)/6; }
+
+// ── Shape classification ──────────────────────────────────────────────────────
+// Each shape returns: name, label, desc, color, bg, border,
+//   appropriate: string[], reconsider: string[]
+
+function classifyShape(){
+  const upper = upperAvg();
+  const lower = lowerAvg();
+  const imb   = imbalance();
+  const traj  = trajectoryMin();
+  const dj    = scores[D];
+  const prox  = scores[P];
+  const avg   = totalAvg();
+
+  // ── 1. Risk transferred to students ──────────────────────────────────────
+  if(imb >= 2.5 && dj <= 2){
+    return {
+      name:'Risk transferred to students',
+      label:'Warning profile',
+      desc:'The AI reaches significantly into the student experience but the professional oversight to manage that reach is absent. The decisions this deployment requires are being made by students who may not be equipped to make them.',
+      color:'#b83232', bg:'#fff5f5', border:'#f5c8c8',
+      appropriate:[
+        'Students are genuinely advanced in both disciplinary content and AI literacy — not just capable, but specifically prepared for unsupervised AI interaction in this domain.',
+        'The activity is explicitly designed to develop student judgment through productive struggle with AI, and the teacher has verified that preparation in advance.',
+        'The stakes of a poor AI interaction are low and recoverable — no assessment weight, no consequential feedback loop.',
+        'A deliberate pedagogical choice has been made to step back and observe, with a clear re-entry plan if things go wrong.',
+      ],
+      reconsider:[
+        'Students have not been explicitly prepared for the critical demands this tool places on them.',
+        'The tool is being used because it is convenient or available, not because the teacher has decided students are ready for it.',
+        'Assessment or feedback is involved — consequences of uncritical AI use are real and immediate.',
+        'The teacher has not thought through what a bad AI interaction looks like and what they would do about it.',
+        'This is the first time students are encountering this kind of AI interaction in this subject.',
+      ]
+    };
+  }
+
+  // ── 2. High proximity, low oversight ─────────────────────────────────────
+  if(prox >= 4 && upper <= 2.5){
+    return {
+      name:'High proximity, low oversight',
+      label:'Warning profile',
+      desc:'This tool works directly on instruction, feedback, or assessment — the core of the learning experience — without professional judgment supervising that contact. The shape is the deskilling argument made visible.',
+      color:'#b83232', bg:'#fff5f5', border:'#f5c8c8',
+      appropriate:[
+        'The tool is being used for a bounded, clearly defined task where the range of AI outputs is predictable and the teacher has reviewed representative examples.',
+        'A human review step is built into the workflow before AI outputs reach students in consequential form.',
+        'The teacher has explicitly decided to accept automation in this zone as a trade-off for another documented benefit.',
+      ],
+      reconsider:[
+        'AI outputs reach students directly without a teacher review step.',
+        'The range of what the AI might produce in this context has not been mapped in advance.',
+        'The tool is performing functions — feedback, assessment, instruction — that the teacher has not verified the AI can do reliably in this specific context.',
+        'Sustained use is the plan, not a one-off trial.',
+        'The teacher cannot describe what professional judgment would look like here if it were present.',
+      ]
+    };
+  }
+
+  // ── 3. Deployment judgment gap ────────────────────────────────────────────
+  if(judgmentGap() >= 2 && prox >= 3){
+    return {
+      name:'Deployment judgment gap',
+      label:'Caution profile',
+      desc:'The exposure this tool creates is ahead of the deployment judgment the scorer assigned. The AI is reaching into the student experience in ways that require upstream professional decisions this deployment may not have made deliberately.',
+      color:'#d47a10', bg:'#fff8ee', border:'#f5ddb0',
+      appropriate:[
+        'The low deployment judgment score reflects that the tool is genuinely simple to deploy well — not that the decision was skipped.',
+        'A colleague with higher deployment expertise reviewed the setup before it went live.',
+        'The tool\'s design does the protective work that deployment judgment would otherwise provide — scaffolding, constraints, and guardrails are strong.',
+      ],
+      reconsider:[
+        'The deployment decision was made quickly, without deliberate analysis of fit for this context.',
+        'The teacher cannot articulate why this tool is appropriate for this specific student population at this moment.',
+        'No one with greater expertise reviewed the deployment before it reached students.',
+        'The exposure dimensions were scored after deployment rather than as part of a decision process.',
+        'The tool is reaching into assessment or feedback without a clear rationale for why AI belongs there.',
+      ]
+    };
+  }
+
+  // ── 4. Hollow capacity trajectory ────────────────────────────────────────
+  if(traj <= 1 && (upper >= 3 || lower >= 3)){
+    return {
+      name:'Hollow capacity trajectory',
+      label:'Caution profile',
+      desc:'This tool does significant work — for teachers or with students — but neither pole of the student capacity trajectory registers. Sustained use builds nothing durable in students. The question is whether that is an acceptable trade.',
+      color:'#d47a10', bg:'#fff8ee', border:'#f5ddb0',
+      appropriate:[
+        'The tool is explicitly peripheral to learning — teacher-facing task management, communication, or logistics — and no one expects it to build student capacity.',
+        'The deployment is short-term or one-off, with no expectation of repeated use across a course.',
+        'The teacher is using this tool to free up time and cognitive bandwidth for activities that do build student capacity, and those activities exist and are scheduled.',
+        'The decision that students won\'t build capacity here was made consciously, not by default.',
+      ],
+      reconsider:[
+        'The tool touches student learning but the teacher has not considered what students will actually retain from sustained use.',
+        'This is the primary AI deployment students encounter — the only one — and they are leaving it without building anything transferable.',
+        'The tool is in use repeatedly across the year without a complementary deployment that develops disciplinary or AI capacity.',
+        'The hollow trajectory was not noticed until now.',
+      ]
+    };
+  }
+
+  // ── 5. Maximum demand ─────────────────────────────────────────────────────
+  if(upper >= 4 && lower >= 4 && traj >= 3){
+    return {
+      name:'Maximum demand profile',
+      label:'High-stakes profile',
+      desc:'Every dimension is high. The professional demands on the teacher are substantial, the AI reaches deeply into student learning, and meaningful capacity is building in both directions. This profile is rare, powerful, and fragile.',
+      color:'#5a3bbf', bg:'#f5f3ff', border:'#ccc8f0',
+      appropriate:[
+        'The teacher deploying this has genuine expertise in the tool, the discipline, and the pedagogy — all three, not just one.',
+        'Active in-use oversight is not just intended but built structurally into how sessions run.',
+        'Students have been explicitly prepared for the level of judgment this deployment demands of them.',
+        'The teacher has a clear picture of what sustained use builds in students and can point to evidence it is working.',
+        'There is a plan for what happens when this teacher steps back — the deployment is documented and transferable.',
+      ],
+      reconsider:[
+        'The teacher overhead is sustainable in a sprint but not across a semester.',
+        'Student preparation for the demands of this tool is assumed rather than verified.',
+        'No one else in the department understands this deployment well enough to continue it.',
+        'The complexity of this profile makes it difficult to tell when something is going wrong.',
+      ]
+    };
+  }
+
+  // ── 6. Minimal footprint ──────────────────────────────────────────────────
+  if(avg <= 2 && upper <= 2.5 && lower <= 2){
+    return {
+      name:'Minimal footprint',
+      label:'Low-impact profile',
+      desc:'No dimension registers significantly. The AI touches neither the teaching practice nor the student experience in a meaningful way. This profile raises a different question than the warning profiles: is this tool doing enough to be worth deploying at all?',
+      color:'#6b6b65', bg:'#f4f4f0', border:'#e4e2da',
+      appropriate:[
+        'The tool serves a narrow, genuinely useful function — scheduling, formatting, logistics — and the low scores accurately reflect its limited scope.',
+        'This is a transitional deployment: a low-stakes entry point for a teacher or student population building familiarity with AI before moving to more demanding configurations.',
+        'The teacher is deliberately choosing a low-footprint option to preserve student cognitive engagement with the core work.',
+      ],
+      reconsider:[
+        'The tool was adopted because it was available, not because anyone identified a specific gap it fills.',
+        'Students are spending meaningful time with this tool without gaining anything from it.',
+        'The low scores reflect that no one has thought carefully about what this tool is supposed to do.',
+        'A non-AI alternative would serve the same function with less overhead.',
+      ]
+    };
+  }
+
+  // ── 7. Teacher-heavy, low exposure ────────────────────────────────────────
+  if(upper >= 3.5 && imb <= -1){
+    return {
+      name:'Teacher-heavy, low exposure',
+      label:'Healthy asymmetry',
+      desc:'Professional judgment dominates this profile and the AI\'s reach into student learning is limited. This is an appropriate asymmetry — the teacher carries the weight and the student experience is protected. The question is whether the demand is sustainable.',
+      color:'#1D9E75', bg:'#f0faf6', border:'#b8e8d8',
+      appropriate:[
+        'The teacher is using AI to improve the quality of what they bring to students — better-designed materials, richer feedback, stronger assessment — without AI appearing in the student experience itself.',
+        'The high teacher demand reflects genuine expertise at work, not just complexity for its own sake.',
+        'The deployment is sustainable across the year, not just in a single high-effort unit.',
+        'Students benefit indirectly from the teacher\'s enhanced capacity, even if they never interact with AI directly.',
+      ],
+      reconsider:[
+        'The teacher demand is high but the benefit to students is not clearly visible — the work is happening upstream but not landing downstream.',
+        'The deployment is only sustainable with this particular teacher\'s level of commitment and expertise.',
+        'Students are gaining nothing in terms of their own capacity to navigate AI — and that gap will matter as they move into contexts where AI is present.',
+        'The asymmetry reflects avoidance rather than a considered choice: the teacher has kept AI away from students because it feels risky, without examining what a well-designed student-facing deployment might offer.',
+      ]
+    };
+  }
+
+  // ── 8. High oversight, productive exposure ────────────────────────────────
+  if(upper >= 4 && lower <= 3.5 && traj >= 3){
+    return {
+      name:'High oversight, productive exposure',
+      label:'Strong profile',
+      desc:'Professional oversight is substantial, the AI\'s reach is purposeful rather than unconstrained, and student capacity is building in at least one direction. This is the configuration the framework is designed to help teachers reach.',
+      color:'#1D9E75', bg:'#f0faf6', border:'#b8e8d8',
+      appropriate:[
+        'The deployment judgment that produced this profile reflects genuine expertise — not optimistic self-assessment.',
+        'Active in-use oversight is structurally present, not just intended.',
+        'The capacity building registered here is actually happening — there is evidence from student work, not just design intent.',
+        'The teacher can describe what they would do if the AI produced something unreliable or harmful, and that response is realistic.',
+      ],
+      reconsider:[
+        'The high oversight scores are aspirational — the teacher intends to monitor closely but the session structure doesn\'t require it.',
+        'Capacity building is built into the design but no one has checked whether students are actually internalising it.',
+        'This profile is accurate for the first unit but may drift as the novelty of active oversight fades.',
+        'A colleague scoring this same deployment independently would produce a significantly different profile.',
+      ]
+    };
+  }
+
+  // ── 9. Balanced, intent determines outcome ────────────────────────────────
+  if(Math.abs(imb) < 1.5 && upper >= 2 && upper <= 3.5 && lower >= 2){
+    return {
+      name:'Balanced — intent determines outcome',
+      label:'Context-dependent profile',
+      desc:'No dimension registers as critically high or low. The shape looks moderate across the board, which means the risks are not in the shape itself — they\'re in the deployment intent. A balanced moderate profile can be sound practice or unconsidered default depending on whether the teacher\'s purpose is explicit.',
+      color:'#5a5bbf', bg:'#f4f3ff', border:'#dddaff',
+      appropriate:[
+        'The moderate scores accurately reflect a tool that sits comfortably in the middle of most dimensions — genuinely balanced, not just unexamined.',
+        'The teacher has a clear, articulable purpose for this deployment and the scores reflect that clarity.',
+        'Inter-rater scoring with a colleague produced a similar profile, confirming the scores aren\'t just individually optimistic.',
+        'The tool is being used for a limited purpose and the moderate reach is by design.',
+      ],
+      reconsider:[
+        'The balanced profile was produced quickly, without careful reading of the anchors.',
+        'The teacher cannot state clearly why this tool belongs in this context for this student population.',
+        'The moderate scores reflect uncertainty about the tool rather than genuine moderation in its reach.',
+        'This profile has never been compared against a colleague\'s scoring of the same tool.',
+      ]
+    };
+  }
+
+  // ── 10. Mixed / default ───────────────────────────────────────────────────
+  return {
+    name:'Mixed profile',
+    label:'Profile requires interpretation',
+    desc:'No single shape pattern dominates this profile. The interpretation lives in the specific combination of scores rather than in the overall shape — use the questions below to locate where the real tensions and strengths sit.',
+    color:'#6b6b65', bg:'#f4f4f0', border:'#e4e2da',
+    appropriate:[
+      'The specific combination of high and low scores reflects a deliberate, well-understood deployment rather than an unexamined one.',
+      'The teacher can account for each dimension\'s score and explain the trade-offs between them.',
+      'A colleague reviewing this profile would agree that the shape accurately describes the deployment.',
+    ],
+    reconsider:[
+      'The profile was produced quickly and the scorer is uncertain about several of the anchor choices.',
+      'The combination of high and low dimensions has not been examined for internal tension — some configurations that look mixed are actually warning profiles in disguise.',
+      'This deployment has not been scored by anyone else, and the scores may reflect how the teacher hopes the tool works rather than how it actually does.',
+    ]
+  };
+}
+
+// ── Deployment questions ──────────────────────────────────────────────────────
+function deploymentQuestions(){
+  const [d,t,f,p,s,k] = scores;
+  const qs = [];
+
+  if(p >= 3)
+    qs.push('What specifically happens to instruction, feedback, or assessment when this tool is unavailable? Can you describe the non-AI version of this activity?');
+  if(d <= 2 && p >= 3)
+    qs.push('Who actually made the decision that this tool belongs here — you, or the tool\'s designer? What would it look like to make that decision yourself?');
+  if(s >= 3)
+    qs.push('Does this student population have the prior knowledge and critical habits to exercise the judgment this tool requires? What evidence informs that assessment?');
+  if(t <= 2 && p >= 3)
+    qs.push('If you stepped away from the room mid-session, what would happen? Is that outcome acceptable?');
+  if(k <= 2 && p >= 3)
+    qs.push('Over a semester of sustained use, what will students be able to do that they couldn\'t before — other than use this tool? Name it specifically.');
+  if(f <= 1 && k <= 1)
+    qs.push('This deployment builds nothing durable in students. Is that a conscious, justified choice — or a gap in the design?');
+  if(d >= 4)
+    qs.push('The expertise this deployment requires is significant. Is it genuinely present, or is this score aspirational? What would a colleague with fresh eyes say?');
+  if(t >= 4)
+    qs.push('The active oversight this requires is substantial. Is that demand sustainable across a full unit — not just today?');
+
+  qs.push('If a colleague saw this profile without knowing the tool, what would you want them to ask you about it?');
+
+  return qs.slice(0, 5);
+}
+
+// ── Governance note ───────────────────────────────────────────────────────────
+function governanceNote(){
+  const [d,t,f,p,s,k] = scores;
+  const upper = upperAvg();
+  const lower = lowerAvg();
+
+  if(p >= 4 && d <= 2)
+    return { level:'Department or administrative review recommended',
+      text:'High AI proximity to learning combined with low deployment expertise is not a classroom-level call. The decision to deploy in this configuration should involve department leadership or instructional oversight — not because the teacher can\'t be trusted, but because the stakes exceed what individual deployment judgment can carry alone.' };
+  if(p >= 4 && d >= 4 && t >= 3)
+    return { level:'Expert teacher deployment — document explicitly',
+      text:'This profile asks a great deal of the teacher and the teacher is positioned to deliver it. The governance question is succession: if this teacher steps back, does the deployment expertise go with them? The decision-making behind this deployment should be written down.' };
+  if(lower <= 2 && upper >= 3)
+    return { level:'Individual teacher decision',
+      text:'The AI\'s reach into student learning is limited and professional oversight is present. This deployment sits comfortably within individual teacher judgment — no governance concerns beyond standard professional reflection.' };
+  if(p <= 2)
+    return { level:'Individual teacher decision',
+      text:'This tool operates at the periphery of student learning. Governance responsibility sits with the teacher making and monitoring the deployment. No administrative escalation is indicated by this profile.' };
+  return { level:'Individual teacher decision with peer review recommended',
+    text:'This profile doesn\'t trigger administrative escalation, but inter-rater scoring with a colleague would strengthen confidence in the shape. Disagreements are diagnostic — they surface assumptions worth examining before committing to this deployment.' };
+}
+
+// ── Build interpretation panel ────────────────────────────────────────────────
+function render(){
+  if(tool) document.getElementById('chart-tool-name').textContent = tool;
+  const ctxParts = [grade, eval_, pop].filter(Boolean);
+  if(ctxParts.length) document.getElementById('chart-context').textContent = ctxParts.join(' · ');
+  else document.getElementById('chart-context').style.display = 'none';
+
+  const rescore = new URLSearchParams(window.location.search);
+  document.getElementById('rescore-link').href = 'score.html?' + rescore.toString();
+
+  drawChart();
+  drawSummary();
+
+  const shape     = classifyShape();
+  const questions = deploymentQuestions();
+  const gov       = governanceNote();
+
+  const panel = document.getElementById('interp-panel');
+  let html = '';
+
+  // 1. Shape summary
+  html += `<div class="shape-card" style="background:${shape.bg};border-color:${shape.border}">
+    <div class="shape-label" style="color:${shape.color}">${shape.label}</div>
+    <div class="shape-name" style="color:${shape.color}">${shape.name}</div>
+    <div class="shape-desc">${shape.desc}</div>
+  </div>`;
+
+  // 2. Appropriate / reconsider
+  html += `<div class="questions-card">
+    <div class="section-label">Reading this profile</div>
+    <div class="apt-grid">
+      <div class="apt-col ok">
+        <div class="apt-col-label">Appropriate if…</div>
+        <div class="apt-list">
+          ${shape.appropriate.map(c=>`<div class="apt-item"><span class="apt-marker">✓</span><span class="apt-text">${c}</span></div>`).join('')}
+        </div>
+      </div>
+      <div class="apt-col warn">
+        <div class="apt-col-label">Warrants reconsideration if…</div>
+        <div class="apt-list">
+          ${shape.reconsider.map(c=>`<div class="apt-item"><span class="apt-marker">→</span><span class="apt-text">${c}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // 3. Questions
+  html += `<div class="questions-card">
+    <div class="section-label">Questions to sit with before deploying</div>
+    <div class="q-list">`;
+  questions.forEach((q,i) => {
+    html += `<div class="q-item"><div class="q-num">${i+1}</div><div class="q-text">${q}</div></div>`;
+  });
+  html += `</div></div>`;
+
+  // 4. Governance
+  html += `<div class="gov-card">
+    <div class="gov-label">Governance level</div>
+    <div class="gov-text"><strong>${gov.level}.</strong> ${gov.text}</div>
+  </div>`;
+
+  panel.innerHTML = html;
+}
+</script>
+</body>
+</html>
