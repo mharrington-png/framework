@@ -78,6 +78,59 @@
   .zone-note strong{color:var(--text);font-weight:500}
 
   footer{margin-top:32px;font-size:11px;color:var(--dim);line-height:1.8;text-align:center}
+
+  /* Examples pill */
+  .app-btn{flex-wrap:wrap}
+  .app-name{flex:1}
+  .ex-pill{
+    display:inline-flex;align-items:center;
+    font-size:10px;font-weight:500;letter-spacing:.03em;
+    color:var(--dim);background:var(--bg);
+    border:1px solid var(--border);border-radius:20px;
+    padding:2px 7px;cursor:pointer;
+    transition:color .12s,border-color .12s,background .12s;
+    flex-shrink:0;white-space:nowrap;margin-left:auto;
+  }
+  .ex-pill:hover{color:var(--muted);border-color:#c8c5bc;background:#f0efe9}
+
+  /* Modal */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(26,26,24,0.45);
+    z-index:100;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.open{display:flex}
+  .modal{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:16px;width:100%;max-width:480px;
+    padding:28px;position:relative;
+    box-shadow:0 8px 32px rgba(0,0,0,0.12);
+  }
+  .modal-close{
+    position:absolute;top:16px;right:16px;
+    background:none;border:none;cursor:pointer;
+    color:var(--dim);font-size:18px;line-height:1;
+    padding:4px 6px;border-radius:6px;transition:background .12s;
+  }
+  .modal-close:hover{background:var(--bg)}
+  .modal-app-name{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px}
+  .modal-heading{font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;margin-bottom:20px;color:var(--text)}
+  .modal-example{
+    background:var(--bg);border:1px solid var(--border);
+    border-radius:10px;padding:16px 18px;
+    font-size:13px;color:var(--muted);line-height:1.75;min-height:72px;
+  }
+  .modal-nav{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+  .modal-nav-btn{
+    display:flex;align-items:center;gap:5px;
+    background:none;border:1px solid var(--border);
+    border-radius:8px;padding:7px 13px;cursor:pointer;
+    font-size:12px;font-weight:500;color:var(--muted);
+    font-family:'DM Sans',sans-serif;transition:background .12s,color .12s;
+  }
+  .modal-nav-btn:hover:not(:disabled){background:var(--bg);color:var(--text)}
+  .modal-nav-btn:disabled{opacity:0.3;cursor:default}
+  .modal-counter{font-size:11px;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -194,6 +247,22 @@
   </footer>
 
 </div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+    <div class="modal-app-name" id="modal-app-name"></div>
+    <div class="modal-heading">Examples</div>
+    <div class="modal-example" id="modal-example"></div>
+    <div class="modal-nav">
+      <button class="modal-nav-btn" id="modal-prev">← Previous</button>
+      <span class="modal-counter" id="modal-counter"></span>
+      <button class="modal-nav-btn" id="modal-next">Next →</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const DIMS=[
   {n:'Deployment judgment',     sh:['Deployment','Judgment'],        c:'#7F77DD', a:300},
@@ -207,19 +276,53 @@ const DIMS=[
 // scores: [Deployment judgment, Teacher in-use, Tool fluency (student), Proximity, Student in-use, Disciplinary knowledge (student)]
 const APPS=[
   {n:'Freeform AI chat',            col:'#D85A30', s:[1,1,2,5,5,2],
-   d:'e.g. ChatGPT, Gemini, Claude without scaffolding. Near-zero deployment barrier means risk falls entirely on students. AI fluency may develop from interfacing directly with tools, but disciplinary content thinking can be bypassed entirely. Neither student capacity pole accumulates in any structured way.'},
+   d:'e.g. ChatGPT, Gemini, Claude without scaffolding. Near-zero deployment barrier means risk falls entirely on students. AI fluency may develop from interfacing directly with tools, but disciplinary content thinking can be bypassed entirely. Neither student capacity pole accumulates in any structured way.',
+   ex:[
+     'A student uses an AI chatbot to help outline an essay, accepting the structure it generates without evaluating whether the argument is actually theirs.',
+     'A student uses a chatbot to create a study guide on cellular respiration to prepare for a biology test.',
+   ]},
   {n:'Structured AI app',           col:'#EF9F27', s:[4,2,2,3,2,3],
-   d:'Classroom activities or Apps that make strategic calls to AI. Deployment judgment does the protective work upstream. The constraints that make it safe also limit student AI fluency building. Content understanding is reinforced if the tool is well designed — but the ceiling depends heavily on pedagogical intent.'},
+   d:'Classroom activities or Apps that make strategic calls to AI. Deployment judgment does the protective work upstream. The constraints that make it safe also limit student AI fluency building. Content understanding is reinforced if the tool is well designed — but the ceiling depends heavily on pedagogical intent.',
+   ex:[
+     'A science teacher builds a tool that uses AI to respond to student pre-lab submissions with targeted feedback and follow-up questions, using parameters she has defined in advance.',
+     'A math teacher designs a class activity around an AI-powered webapp that offers statistics practice with significance tests. At key points in the inference process, student responses are sent to an AI that delivers feedback and adapts follow-up steps based on the decisions students make in real time.',
+   ]},
   {n:'AI co-designed experience', col:'#1D9E75', s:[5,2,1,2,1,5],
-   d:'e.g. Interactive learning tools, built with AI but no AI on the student end. Pedagogically designed to build content knowlege intentionally. The student learning experience is enabled by AI but AI is not enabled during the experience.'},
+   d:'e.g. Interactive learning tools, built with AI but no AI on the student end. Pedagogically designed to build content knowlege intentionally. The student learning experience is enabled by AI but AI is not enabled during the experience.',
+   ex:[
+     'A history teacher works with AI to design a primary source analysis activity — the AI informed the scaffolding, but students interact only with the documents and prompts the teacher produced.',
+     'A math teacher uses AI to build an interactive reference tool for students, with the AI powering the dynamic interactivity while the teacher dictates the structure and content to align with course goals.',
+     'A teacher uses AI to redesign a longtime favorite project, restructuring the student process to make thinking more visible and the assignment more resistant to AI shortcuts outside of class.',
+   ]},
   {n:'Guardrailed AI tutor',        col:'#378ADD', s:[3,2,2,4,3,4],
-   d:'e.g. Khanmigo-style Socratic tools. The Socratic design actively builds disciplinary understanding. Guardrails that make it safe also limit authentic AI fluency — students interact with a constrained surface, not the underlying system. Deployment must be intentional to maintain both.'},
+   d:'e.g. Khanmigo-style Socratic tools. The Socratic design actively builds disciplinary understanding. Guardrails that make it safe also limit authentic AI fluency — students interact with a constrained surface, not the underlying system. Deployment must be intentional to maintain both.',
+   ex:[
+     'A student uses a Socratic tutoring tool that responds to their answers with follow-up questions rather than direct explanations, pushing them to reason through the problem themselves.',
+     'A teacher creates a custom chatbot designed to guide students through a series of questions to help them articulate a direction for their upcoming project, then point them toward relevant resources rather than generating the idea for them.',
+     'A student uses a subject-specific AI tutor constrained to textbook-aligned content that flags responses it isn\'t confident about.',
+   ]},
   {n:'Task streamlining',           col:'#888780', s:[2,4,1,2,1,3],
-   d:'e.g. Drafting rubrics, parent communications, generating worked examples. Peripheral to students — they benefit indirectly from higher teacher quality and better-designed materials. Neither student capacity pole is directly engaged; the disciplinary knowledge score reflects that the teacher\'s preserved expertise serves students over time.'},
+   d:'e.g. Drafting rubrics, parent communications, generating worked examples. Peripheral to students — they benefit indirectly from higher teacher quality and better-designed materials. Neither student capacity pole is directly engaged; the disciplinary knowledge score reflects that the teacher\'s preserved expertise serves students over time.',
+   ex:[
+     'A teacher uses AI to draft a rubric for a research project, then edits it substantially before sharing it with students.',
+     'A department uses an AI-powered tool to build a shared assessment bank, automatically categorizing and organizing contributed materials into a searchable archive.',
+     'A teacher uses AI to create a parallel version of an assessment for students who were absent on test day.',
+     'A teacher uses an AI agent to organize their documents folder and apply a consistent naming convention across all course materials.',
+   ]},
   {n:'AI curriculum partner',       col:'#534AB7', s:[5,5,2,3,1,5],
-   d:'e.g. Designing curricula, assessment sequences, and pedagogical frameworks with AI. Not directly student-facing at the point of interaction, so student tool fluency does not build here. Disciplinary knowledge scores highest — the tool exists to deepen student content learning, and the teacher\'s rigorous authorship is the mechanism.'},
+   d:'e.g. Designing curricula, assessment sequences, and pedagogical frameworks with AI. Not directly student-facing at the point of interaction, so student tool fluency does not build here. Disciplinary knowledge scores highest — the tool exists to deepen student content learning, and the teacher\'s rigorous authorship is the mechanism.',
+   ex:[
+     'A department chair uses AI to pressure-test a curriculum sequence, asking it to identify gaps in the progression from introductory to advanced coursework.',
+     'Before teaching a new elective, a teacher uses AI as a thought partner to work backwards from core learning goals — defining what mastery looks like before building the syllabus and assessment progression that leads there.',
+     'A teacher uses AI to explore pedagogical approaches outside her training, building a unit that reflects that research while remaining entirely her own in design and delivery.',
+   ]},
   {n:'High Value task automation',  col:'#A32D2D', s:[2,1,1,5,1,1],
-   d:'e.g. Automated essay grading, algorithmic intervention flags. Highly proximate to learning, with professional judgment absent at every stage. Students receive outputs rather than interacting with AI — tool fluency does not build. Disciplinary knowledge is directly at risk: the acts of assessment and diagnosis that generate understanding are performed by the system, not worked through by students or teachers.'},
+   d:'e.g. Automated essay grading, algorithmic intervention flags. Highly proximate to learning, with professional judgment absent at every stage. Students receive outputs rather than interacting with AI — tool fluency does not build. Disciplinary knowledge is directly at risk: the acts of assessment and diagnosis that generate understanding are performed by the system, not worked through by students or teachers.',
+   ex:[
+     'A teacher uploads student essays into a tool that provides automated feedback and grades based on a rubric, with results going directly to students.',
+     'A school uses an AI detection system to route flagged student work directly into a disciplinary process, with no human review step between an algorithm\'s confidence score and a student\'s record.',
+     'A teacher uses AI to generate class comments based on grade data, with minimal editing before they reach families.',
+   ]},
 ];
 
 let sel=1;
@@ -300,12 +403,51 @@ function draw(){
   }).join('');
 }
 
+// Modal logic
+let modalIdx=0, modalApp=null;
+function openModal(i){
+  modalApp=APPS[i]; modalIdx=0; renderModal();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function renderModal(){
+  const ex=modalApp.ex;
+  document.getElementById('modal-app-name').textContent=modalApp.n;
+  document.getElementById('modal-app-name').style.color=modalApp.col;
+  document.getElementById('modal-example').textContent=ex[modalIdx];
+  document.getElementById('modal-counter').textContent=`${modalIdx+1} of ${ex.length}`;
+  document.getElementById('modal-prev').disabled=modalIdx===0;
+  document.getElementById('modal-next').disabled=modalIdx===ex.length-1;
+}
+document.getElementById('modal-close').onclick=()=>document.getElementById('modal-overlay').classList.remove('open');
+document.getElementById('modal-overlay').onclick=(e)=>{if(e.target===e.currentTarget)document.getElementById('modal-overlay').classList.remove('open');};
+document.getElementById('modal-prev').onclick=()=>{if(modalIdx>0){modalIdx--;renderModal();}};
+document.getElementById('modal-next').onclick=()=>{if(modalIdx<modalApp.ex.length-1){modalIdx++;renderModal();}};
+document.addEventListener('keydown',(e)=>{
+  if(!document.getElementById('modal-overlay').classList.contains('open'))return;
+  if(e.key==='Escape')document.getElementById('modal-overlay').classList.remove('open');
+  if(e.key==='ArrowLeft'&&modalIdx>0){modalIdx--;renderModal();}
+  if(e.key==='ArrowRight'&&modalIdx<modalApp.ex.length-1){modalIdx++;renderModal();}
+});
+
 const list=document.getElementById('app-list');
 APPS.forEach((app,i)=>{
   const b=document.createElement('button');
   b.className='app-btn'+(i===sel?' sel':'');
-  b.innerHTML=`<span class="app-dot" style="background:${app.col}"></span><span class="app-name">${app.n}</span>`;
-  b.onclick=()=>{sel=i;document.querySelectorAll('.app-btn').forEach((x,j)=>x.classList.toggle('sel',j===i));draw();};
+  b.innerHTML=`<span class="app-dot" style="background:${app.col}"></span><span class="app-name">${app.n}</span><span class="ex-pill" data-idx="${i}">Examples</span>`;
+  b.onclick=(e)=>{
+    if(e.target.classList.contains('ex-pill')){
+      // Pill: select app AND open modal
+      sel=i;
+      document.querySelectorAll('.app-btn').forEach((x,j)=>x.classList.toggle('sel',j===i));
+      draw();
+      openModal(i);
+      return;
+    }
+    // App name: select only, no modal
+    sel=i;
+    document.querySelectorAll('.app-btn').forEach((x,j)=>x.classList.toggle('sel',j===i));
+    draw();
+  };
   list.appendChild(b);
 });
 draw();
