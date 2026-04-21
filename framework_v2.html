@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>An Evaluative Framework for AI Deployment Decisions — Middlesex School</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f9f8f5;
+    --card:#ffffff;
+    --text:#1a1a18;
+    --muted:#6b6b65;
+    --dim:#a8a8a0;
+    --border:#e4e2da;
+    --teacher:#4a5bbf;
+    --teacher-bg:#f0f4ff;
+    --teacher-border:#d4daf5;
+    --traj:#6b6b65;
+    --traj-bg:#f4f4f0;
+    --exposure:#a05c15;
+    --exposure-bg:#fff8f0;
+    --exposure-border:#f0dfc4;
+  }
+
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:40px 20px 60px}
+  .page{max-width:860px;margin:0 auto}
+
+  /* ── HEADER ── */
+  header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border)}
+  header h1{font-family:'DM Serif Display',serif;font-size:clamp(26px,4vw,40px);font-weight:400;line-height:1.15;margin-bottom:4px}
+  header .school{font-size:12px;color:var(--dim);letter-spacing:.05em;text-transform:uppercase;margin-bottom:18px;display:block}
+  .hook{font-size:15px;color:var(--text);line-height:1.8;max-width:860px;text-align:justify}
+  .hook em{font-style:normal;color:var(--text);font-weight:600}
+
+  /* ── SECTION LABELS ── */
+  .section-label{font-size:13px;color:var(--muted);line-height:1.7;max-width:860px;margin-bottom:18px;text-align:justify}
+
+  /* ── TLC TREE GRID ── */
+  .tlc-grid{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+    margin-bottom:40px;
+    border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    align-items:stretch;
+  }
+  @media(max-width:640px){.tlc-grid{grid-template-columns:1fr}}
+
+  .tlc-card{padding:24px 22px;display:flex;flex-direction:column;height:100%}
+  .tlc-card.t{background:var(--teacher-bg)}
+  .tlc-card.l{background:var(--exposure-bg);border-left:1px solid var(--border);border-right:1px solid var(--border)}
+  @media(max-width:640px){.tlc-card.l{border-left:none;border-right:none;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}}
+  .tlc-card.c{background:var(--traj-bg)}
+
+  .tlc-letter{font-family:'DM Serif Display',serif;font-size:32px;font-weight:400;line-height:1;margin-bottom:6px;text-align:center}
+  .tlc-letter.t{color:var(--teacher)}
+  .tlc-letter.l{color:var(--exposure)}
+  .tlc-letter.c{color:var(--traj)}
+
+  .tlc-zone-name{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;text-align:center}
+  .tlc-zone-name.t{color:var(--teacher)}
+  .tlc-zone-name.l{color:var(--exposure)}
+  .tlc-zone-name.c{color:var(--traj)}
+
+  .tlc-question{font-size:13px;font-weight:500;line-height:1.65;color:var(--text);margin-bottom:0;min-height:80px;text-align:center}
+  .tlc-question em{font-style:italic;color:var(--muted)}
+
+  /* Tree branches — pushed to bottom of card */
+  .tlc-dims{display:flex;flex-direction:column;gap:0;margin-top:18px;border-top:1px solid rgba(0,0,0,0.07);padding-top:14px}
+  .tlc-dim{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.05);min-height:90px}
+  .tlc-dim:last-child{border-bottom:none;padding-bottom:0;min-height:unset}
+  .tlc-dim-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .tlc-dim-body{flex:1}
+  .tlc-dim-name{font-size:12px;font-weight:600;display:block;margin-bottom:2px}
+  .tlc-dim-desc{font-size:11px;color:var(--muted);line-height:1.55}
+
+  /* ── PROFILE BRIDGE PANEL ── */
+  .bridge-panel{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:28px 32px;margin-bottom:40px;
+    display:grid;grid-template-columns:300px 1fr;gap:36px;align-items:start;
+  }
+  @media(max-width:640px){.bridge-panel{grid-template-columns:1fr}}
+  .bridge-left{display:flex;flex-direction:column;gap:10px}
+  .bridge-chart-wrap svg{width:100%;display:block}
+
+  .bridge-dim-label{min-height:40px;display:flex;flex-direction:column;gap:4px}
+  .bdl-row{display:flex;align-items:center;gap:7px}
+  .bdl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .bdl-name{font-size:11px;font-weight:600}
+
+  .bridge-tabs{display:flex;flex-direction:column;gap:5px}
+  .bridge-tabs-row{display:flex;gap:5px}
+  .bridge-tab{
+    flex:1;
+    padding:5px 11px;border-radius:6px;
+    border:1px solid var(--border);background:transparent;
+    font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;
+    color:var(--muted);cursor:pointer;transition:all .15s;text-align:center;
+  }
+  .bridge-tab:hover{background:var(--bg)}
+  .bridge-tab[data-zone="all"].active{background:var(--text);color:#fff;border-color:var(--text)}
+  .bridge-tab[data-zone="t"].active{background:var(--teacher);color:#fff;border-color:var(--teacher)}
+  .bridge-tab[data-zone="l"].active{background:var(--exposure);color:#fff;border-color:var(--exposure)}
+  .bridge-tab[data-zone="c"].active{background:var(--traj);color:#fff;border-color:var(--traj)}
+
+  .bridge-text h3{font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;margin-bottom:12px}
+  .bridge-text p{font-size:12px;color:var(--muted);line-height:1.85}
+  .bridge-text p+p{margin-top:10px}
+  .bridge-text strong{color:var(--text);font-weight:500}
+
+  /* ── WORKED EXAMPLES ── */
+  .examples-section{margin-bottom:40px}
+  .examples-intro{font-size:13px;color:var(--muted);line-height:1.75;max-width:680px;margin-bottom:20px}
+  .examples-intro strong{color:var(--text);font-weight:500}
+
+  .carousel-wrap{overflow:hidden;border-radius:14px}
+  .carousel{
+    display:flex;
+    transition:transform .35s ease;
+    will-change:transform;
+  }
+
+  .example-card{
+    flex:0 0 100%;min-width:0;background:var(--card);border:1px solid var(--border);
+    border-radius:14px;padding:24px;
+  }
+
+  .ex-type-tag{font-size:10px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:6px}
+  .ex-scenario{font-size:14px;font-weight:500;line-height:1.55;color:var(--text);margin-bottom:16px}
+  .reasoning-header{font-size:9px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;display:block}
+
+  /* Spatial layout — three independent rows */
+  .ex-spatial{display:flex;flex-direction:column;gap:8px}
+
+  .spatial-row-teacher{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+  .spatial-teacher-left{grid-column:2}
+  .spatial-teacher-right{grid-column:3}
+
+  .spatial-row-mid{display:grid;grid-template-columns:1fr 216px 1fr;gap:8px;align-items:center}
+  .spatial-left{grid-column:1;display:flex;flex-direction:column;gap:8px;align-items:flex-end;text-align:right}
+  .spatial-chart{grid-column:2}
+  .spatial-right{grid-column:3;display:flex;flex-direction:column;gap:8px;align-items:flex-start;text-align:left}
+
+  .spatial-row-exposure{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+  .spatial-exposure-left{grid-column:2}
+  .spatial-exposure-right{grid-column:3}
+
+  .reason-row{padding:6px 8px;border-radius:6px;background:var(--bg)}
+  .reason-dim{font-size:10px;font-weight:600;display:block;margin-bottom:2px}
+  .reason-text{font-size:11px;color:var(--muted);line-height:1.5}
+
+  .carousel-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:16px}
+  .nav-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 20px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--muted);cursor:pointer;transition:background .12s}
+  .nav-btn:hover{background:#f2f1ec}
+  .nav-btn:disabled{opacity:.35;cursor:default}
+  .nav-counter{font-size:12px;color:var(--dim)}
+
+  /* ── SCORE CTA ── */
+  .score-cta{
+    background:var(--teacher-bg);border:1px solid var(--teacher-border);border-radius:14px;
+    padding:28px 32px;margin-bottom:40px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  }
+  .cta-text h3{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:6px}
+  .cta-text p{font-size:13px;color:var(--muted);line-height:1.65;max-width:460px}
+  .cta-links{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+  .cta-btn{
+    display:inline-block;padding:9px 18px;border-radius:8px;
+    font-size:13px;font-weight:500;text-decoration:none;text-align:center;
+    font-family:'DM Sans',sans-serif;transition:opacity .12s;
+  }
+  .cta-btn.primary{background:var(--teacher);color:#fff}
+  .cta-btn.secondary{background:transparent;border:1px solid var(--teacher-border);color:var(--teacher)}
+  .cta-btn:hover{opacity:.85}
+
+  /* ── FOOTER ── */
+  footer{margin-top:16px;font-size:11px;color:var(--dim);line-height:1.8;text-align:center}
+  footer a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header>
+    <h1>An Evaluative Framework for<br>AI Deployment Decisions</h1>
+    <span class="school">Middlesex School &nbsp;·&nbsp; Concord, Massachusetts</span>
+    <p class="hook">Many school AI policies place responsibility for deployment decisions with the department and the teacher — but give teachers no structured way to exercise that responsibility. <em>This is one structured way to do that thinking.</em></p>
+  </header>
+
+  <!-- ── TLC ── -->
+  <p class="section-label">Teachers should hold three considerations in mind when evaluating any AI use — their own or their students'.</p>
+  <div class="tlc-grid">
+
+    <div class="tlc-card t">
+      <div class="tlc-letter t">T</div>
+      <div class="tlc-zone-name t">Teacher</div>
+      <div class="tlc-question">What does this tool use do <em>for</em> the teacher — and what does it ask <em>of</em> them?</div>
+      <div class="tlc-dims">
+        <div class="tlc-dim">
+          <div class="tlc-dim-dot" style="background:#7F77DD"></div>
+          <div class="tlc-dim-body">
+            <span class="tlc-dim-name" style="color:#7F77DD">Deployment judgment</span>
+            <span class="tlc-dim-desc">Expertise required to decide whether and how to use AI for a task — exercised before use begins.</span>
+          </div>
+        </div>
+        <div class="tlc-dim">
+          <div class="tlc-dim-dot" style="background:#1D9E75"></div>
+          <div class="tlc-dim-body">
+            <span class="tlc-dim-name" style="color:#1D9E75">Teacher in-use agency</span>
+            <span class="tlc-dim-desc">The professional authority the teacher retains while the tool runs — whether their judgment is still shaping what students experience, or whether the system has taken over the meaningful decisions.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tlc-card l">
+      <div class="tlc-letter l">L</div>
+      <div class="tlc-zone-name l">Learner</div>
+      <div class="tlc-question">What does this AI use do <em>for</em> the student — and can they reasonably exercise the judgment it requires?</div>
+      <div class="tlc-dims">
+        <div class="tlc-dim">
+          <div class="tlc-dim-dot" style="background:#BA7517"></div>
+          <div class="tlc-dim-body">
+            <span class="tlc-dim-name" style="color:#BA7517">Proximity to learning</span>
+            <span class="tlc-dim-desc">How directly the AI touches the core acts of instruction, learning, feedback, and assessment.</span>
+          </div>
+        </div>
+        <div class="tlc-dim">
+          <div class="tlc-dim-dot" style="background:#378ADD"></div>
+          <div class="tlc-dim-body">
+            <span class="tlc-dim-name" style="color:#378ADD">Student judgment burden</span>
+            <span class="tlc-dim-desc">The degree of critical judgment students must independently supply for this AI use to go well — not as a condition of access, but as a requirement for the interaction to be educationally sound.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tlc-card c">
+      <div class="tlc-letter c">C</div>
+      <div class="tlc-zone-name c">Capacities</div>
+      <div class="tlc-question">What capacities does this AI use build in students?</div>
+      <div class="tlc-dims">
+        <div class="tlc-dim">
+          <div class="tlc-dim-dot" style="background:#3B6D11"></div>
+          <div class="tlc-dim-body">
+            <span class="tlc-dim-name" style="color:#3B6D11">Tool fluency</span>
+            <span class="tlc-dim-desc">Whether sustained use builds AI literacy — understanding how these systems behave and how to work with them critically.</span>
+          </div>
+        </div>
+        <div class="tlc-dim">
+          <div class="tlc-dim-dot" style="background:#993C1D"></div>
+          <div class="tlc-dim-body">
+            <span class="tlc-dim-name" style="color:#993C1D">Disciplinary knowledge</span>
+            <span class="tlc-dim-desc">Whether sustained use builds students' content understanding and disciplinary thinking.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── BRIDGE TO PROFILE ── -->
+  <div class="bridge-panel">
+    <div class="bridge-left">
+      <div class="bridge-chart-wrap">
+        <svg id="guide-chart" viewBox="0 0 260 212" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block"></svg>
+      </div>
+      <div class="bridge-dim-label" id="bridge-dim-label"></div>
+      <div class="bridge-tabs">
+        <div class="bridge-tabs-row">
+          <button class="bridge-tab" data-zone="t" onclick="setZone('t')">Teacher</button>
+          <button class="bridge-tab" data-zone="l" onclick="setZone('l')">Learner</button>
+          <button class="bridge-tab" data-zone="c" onclick="setZone('c')">Capacities</button>
+        </div>
+        <div class="bridge-tabs-row">
+          <button class="bridge-tab active" data-zone="all" onclick="setZone('all')">All dimensions</button>
+        </div>
+      </div>
+    </div>
+    <div class="bridge-text">
+      <h3>Shape, not score</h3>
+      <p>Together, the dimensions described above can help profile a particular AI use. They can be mapped to the visual profile here — select a consideration to see which dimensions it corresponds to.</p>
+      <p>A profile full in the upper half and thin in the lower means significant teacher judgment is required and the AI's reach into student experience is limited — the professional is doing the work. Heavy in the lower half with a thin upper means the AI touches instruction, feedback, or assessment directly, while judgment lands on the student rather than the teacher.</p>
+      <p><strong>The equator tracks student capacities over time.</strong> Both horizontal dimensions trace what sustained use builds or erodes in students. Whether high or low serves your students depends on your curricular goals.</p>
+      <p>The aim is not to encourage AI uses with high totals. It is to surface what a specific use actually asks of teachers and students — so that judgment can be exercised deliberately.</p>
+    </div>
+  </div>
+
+  <!-- ── WORKED EXAMPLES ── -->
+  <div class="examples-section">
+    <p class="section-label">The profiles below are <strong style="color:var(--text);font-weight:500">one teacher's reasoning</strong> about specific AI uses he has tried or evaluated at Middlesex School. They are not verdicts — they illustrate how these considerations structure thinking about a concrete scenario. Your context may look different, and that difference is the point.</p>
+    <div class="carousel-wrap">
+      <div class="carousel" id="carousel"></div>
+      <div class="carousel-nav">
+        <button class="nav-btn" id="prev-btn" disabled>← Prev</button>
+        <span class="nav-counter" id="nav-counter"></span>
+        <button class="nav-btn" id="next-btn">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCORE CTA ── -->
+  <div class="score-cta">
+    <div class="cta-text">
+      <h3>Think through a specific AI use</h3>
+      <p>The framework is a thinking tool, not a rating system. Use the interactive diagnostic tool or the printable worksheet to work through an AI use you're considering.</p>
+    </div>
+    <div class="cta-links">
+      <a href="https://mathclass.today/framework/score.html" class="cta-btn primary">Interactive diagnostic tool →</a>
+      <a href="https://mathclass.today/framework/AI_scoring_worksheet.docx" class="cta-btn secondary">Download worksheet</a>
+    </div>
+  </div>
+
+  <footer>
+    <div style="max-width:600px;margin:0 auto;padding:16px 0 8px;border-top:1px solid var(--border)">
+      <div style="margin-top:8px;font-size:11px;color:var(--dim);line-height:1.7">© 2026 Mike Harrington. Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a>. Free to share and adapt for non-commercial purposes with attribution.</div>
+    </div>
+  </footer>
+
+</div>
+<script>
+const DIMS=[
+  {n:'Deployment judgment',     c:'#7F77DD', a:300},
+  {n:'Teacher in-use agency', c:'#1D9E75', a:240},
+  {n:'Tool fluency',            c:'#3B6D11', a:180},
+  {n:'Proximity to learning',   c:'#BA7517', a:60},
+  {n:'Student judgment burden', c:'#378ADD', a:120},
+  {n:'Disciplinary knowledge',  c:'#993C1D', a:0},
+];
+
+const EXAMPLES=[
+  {
+    scenario:'[Placeholder: one concrete sentence — who uses what, for what purpose, in what context.]',
+    tag:'[AI use type]',
+    s:[1,1,2,5,5,2],
+    reasons:[
+      '[Placeholder: one sentence explaining your deployment judgment score.]',
+      '[Placeholder: one sentence explaining your teacher in-use agency score.]',
+      '[Placeholder: one sentence explaining your tool fluency score.]',
+      '[Placeholder: one sentence explaining your proximity to learning score.]',
+      '[Placeholder: one sentence explaining your student judgment burden score.]',
+      '[Placeholder: one sentence explaining your disciplinary knowledge score.]',
+    ]
+  },
+  {
+    scenario:'[Placeholder: one concrete sentence — who uses what, for what purpose, in what context.]',
+    tag:'[AI use type]',
+    s:[4,2,2,3,2,3],
+    reasons:[
+      '[Placeholder: one sentence explaining your deployment judgment score.]',
+      '[Placeholder: one sentence explaining your teacher in-use agency score.]',
+      '[Placeholder: one sentence explaining your tool fluency score.]',
+      '[Placeholder: one sentence explaining your proximity to learning score.]',
+      '[Placeholder: one sentence explaining your student judgment burden score.]',
+      '[Placeholder: one sentence explaining your disciplinary knowledge score.]',
+    ]
+  },
+  {
+    scenario:'[Placeholder: one concrete sentence — who uses what, for what purpose, in what context.]',
+    tag:'[AI use type]',
+    s:[5,2,1,2,1,5],
+    reasons:[
+      '[Placeholder: one sentence explaining your deployment judgment score.]',
+      '[Placeholder: one sentence explaining your teacher in-use agency score.]',
+      '[Placeholder: one sentence explaining your tool fluency score.]',
+      '[Placeholder: one sentence explaining your proximity to learning score.]',
+      '[Placeholder: one sentence explaining your student judgment burden score.]',
+      '[Placeholder: one sentence explaining your disciplinary knowledge score.]',
+    ]
+  },
+  {
+    scenario:'[Placeholder: one concrete sentence — who uses what, for what purpose, in what context.]',
+    tag:'[AI use type]',
+    s:[3,2,2,4,3,4],
+    reasons:[
+      '[Placeholder: one sentence explaining your deployment judgment score.]',
+      '[Placeholder: one sentence explaining your teacher in-use agency score.]',
+      '[Placeholder: one sentence explaining your tool fluency score.]',
+      '[Placeholder: one sentence explaining your proximity to learning score.]',
+      '[Placeholder: one sentence explaining your student judgment burden score.]',
+      '[Placeholder: one sentence explaining your disciplinary knowledge score.]',
+    ]
+  },
+  {
+    scenario:'[Placeholder: one concrete sentence — who uses what, for what purpose, in what context.]',
+    tag:'[AI use type]',
+    s:[2,4,1,2,1,3],
+    reasons:[
+      '[Placeholder: one sentence explaining your deployment judgment score.]',
+      '[Placeholder: one sentence explaining your teacher in-use agency score.]',
+      '[Placeholder: one sentence explaining your tool fluency score.]',
+      '[Placeholder: one sentence explaining your proximity to learning score.]',
+      '[Placeholder: one sentence explaining your student judgment burden score.]',
+      '[Placeholder: one sentence explaining your disciplinary knowledge score.]',
+    ]
+  },
+  {
+    scenario:'[Placeholder: one concrete sentence — who uses what, for what purpose, in what context.]',
+    tag:'[AI use type]',
+    s:[5,5,2,3,1,5],
+    reasons:[
+      '[Placeholder: one sentence explaining your deployment judgment score.]',
+      '[Placeholder: one sentence explaining your teacher in-use agency score.]',
+      '[Placeholder: one sentence explaining your tool fluency score.]',
+      '[Placeholder: one sentence explaining your proximity to learning score.]',
+      '[Placeholder: one sentence explaining your student judgment burden score.]',
+      '[Placeholder: one sentence explaining your disciplinary knowledge score.]',
+    ]
+  },
+  {
+    scenario:'[Placeholder: one concrete sentence — who uses what, for what purpose, in what context.]',
+    tag:'[AI use type]',
+    s:[2,1,1,5,1,1],
+    reasons:[
+      '[Placeholder: one sentence explaining your deployment judgment score.]',
+      '[Placeholder: one sentence explaining your teacher in-use agency score.]',
+      '[Placeholder: one sentence explaining your tool fluency score.]',
+      '[Placeholder: one sentence explaining your proximity to learning score.]',
+      '[Placeholder: one sentence explaining your student judgment burden score.]',
+      '[Placeholder: one sentence explaining your disciplinary knowledge score.]',
+    ]
+  },
+];
+
+// ── ZONE DEFINITIONS for interactive guide chart ──
+// dim indices: 0=Deployment, 1=Teacher in-use, 2=Tool fluency, 3=Proximity, 4=Student in-use, 5=Disciplinary
+const ZONES={
+  all:{ dims:[0,1,2,3,4,5], label:[] },
+  t:  { dims:[0,1],         label:[{c:'#7F77DD',n:'Deployment judgment'},{c:'#1D9E75',n:'Teacher in-use agency'}] },
+  l:  { dims:[3,4],         label:[{c:'#BA7517',n:'Proximity to learning'},{c:'#378ADD',n:'Student judgment burden'}] },
+  c:  { dims:[2,5],         label:[{c:'#3B6D11',n:'Tool fluency'},{c:'#993C1D',n:'Disciplinary knowledge'}] },
+};
+const GUIDE_SCORES=[5,4,3,2,1,4];
+let activeZone='all';
+
+function buildGuideChart(zone){
+  // Use a wider viewBox for the guide chart to give labels room
+  const active=ZONES[zone].dims;
+  const CX2=130,CY2=106,R2=[30,38,47,56,65],SW2=5.5,SP2=46;
+  let s='';
+  s+=`<path d="M${CX2+72} ${CY2} A72 72 0 0 0 ${CX2-72} ${CY2} Z" fill="rgba(74,91,191,0.05)"/>`;
+  s+=`<path d="M${CX2+72} ${CY2} A72 72 0 0 1 ${CX2-72} ${CY2} Z" fill="rgba(160,92,21,0.05)"/>`;
+  const axL=CX2-80,axR=CX2+80;
+  s+=`<line x1="${axL+4}" y1="${CY2}" x2="${axR-4}" y2="${CY2}" stroke="#ccc9be" stroke-width="1"/>`;
+  s+=`<polygon points="${axL+4},${CY2-2} ${axL},${CY2} ${axL+4},${CY2+2}" fill="#ccc9be"/>`;
+  s+=`<polygon points="${axR-4},${CY2-2} ${axR},${CY2} ${axR-4},${CY2+2}" fill="#ccc9be"/>`;
+
+  // Dim name pairs for two-line labels
+  const DIM_LABELS=[
+    ['Deployment','Judgment'],
+    ['Teacher In-use','Agency'],
+    ['Tool','Fluency'],
+    ['Proximity to','Learning'],
+    ['Student Judgment','Burden'],
+    ['Disciplinary','Knowledge'],
+  ];
+
+  for(let i=0;i<6;i++){
+    const ca=DIMS[i].a,sa=ca-SP2/2,ea=ca+SP2/2,score=GUIDE_SCORES[i];
+    const isActive=active.includes(i);
+    const baseOp=zone==='all'?0.75:0.1;
+    const activeOp=0.88;
+    for(let l=0;l<5;l++){
+      const filled=l<score;
+      const op=filled?(isActive?activeOp:baseOp):0.08;
+      s+=`<path d="${arc2(R2[l],sa,ea,CX2,CY2)}" fill="none" stroke="${DIMS[i].c}" stroke-width="${SW2}" stroke-linecap="round" opacity="${op}"/>`;
+    }
+    // Labels — always visible in all mode (dim), fully visible when zone active
+    const labelOp=zone==='all'?0.55:(isActive?1:0.15);
+    const lr=88,la=rad(ca);
+    const lx=(CX2+lr*Math.cos(la)).toFixed(1);
+    const ly=(CY2+lr*Math.sin(la)).toFixed(1);
+    const cosA=Math.cos(la);
+    const anchor=Math.abs(cosA)<0.22?'middle':cosA>0?'start':'end';
+    const isH=Math.abs(cosA)>0.9;
+    const lines=DIM_LABELS[i];
+    const lh=10;
+    if(isH){
+      const totalH=lines.length*lh;
+      const topY=parseFloat(ly)-totalH-4;
+      s+=`<text text-anchor="${anchor}" font-family="DM Sans,sans-serif" font-size="8" font-weight="600" fill="${DIMS[i].c}" opacity="${labelOp}">`;
+      lines.forEach((w,j)=>{ s+=`<tspan x="${lx}" y="${(topY+j*lh).toFixed(1)}">${w}</tspan>`; });
+      s+=`</text>`;
+    } else {
+      const totalH=(lines.length-1)*lh;
+      const topY=parseFloat(ly)-totalH/2;
+      s+=`<text text-anchor="${anchor}" font-family="DM Sans,sans-serif" font-size="8" font-weight="600" fill="${DIMS[i].c}" opacity="${labelOp}">`;
+      lines.forEach((w,j)=>{ s+=`<tspan x="${lx}" y="${(topY+j*lh).toFixed(1)}" dominant-baseline="central">${w}</tspan>`; });
+      s+=`</text>`;
+    }
+  }
+  s+=`<circle cx="${CX2}" cy="${CY2}" r="2.5" fill="#d4d0c8"/>`;
+  return s;
+}
+
+// Arc helper for guide chart with variable center
+function arc2(r,sa,ea,cx,cy){
+  const x1=cx+r*Math.cos(rad(sa)),y1=cy+r*Math.sin(rad(sa));
+  const x2=cx+r*Math.cos(rad(ea)),y2=cy+r*Math.sin(rad(ea));
+  return`M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+
+function setZone(zone){
+  activeZone=zone;
+  document.getElementById('guide-chart').innerHTML=buildGuideChart(zone);
+  // Update tabs
+  document.querySelectorAll('.bridge-tab').forEach(b=>{
+    b.classList.toggle('active', b.dataset.zone===zone);
+  });
+  // Update dim label
+  const label=document.getElementById('bridge-dim-label');
+  const rows=ZONES[zone].label;
+  label.innerHTML=rows.map(r=>`
+    <div class="bdl-row">
+      <div class="bdl-dot" style="background:${r.c}"></div>
+      <span class="bdl-name" style="color:${r.c}">${r.n}</span>
+    </div>`).join('');
+}
+
+// ── CHART ──
+const CX=105,CY=86,R=[25,31.5,38,44.5,51],SW=4.5,SP=46;
+function rad(d){return d*Math.PI/180}
+function arc(r,sa,ea){
+  const x1=CX+r*Math.cos(rad(sa)),y1=CY+r*Math.sin(rad(sa));
+  const x2=CX+r*Math.cos(rad(ea)),y2=CY+r*Math.sin(rad(ea));
+  return`M${x1.toFixed(2)} ${y1.toFixed(2)}A${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+function buildChart(scores,dimOpacity){
+  const op=dimOpacity||0.88;
+  let s='';
+  s+=`<path d="M${CX+58} ${CY} A58 58 0 0 0 ${CX-58} ${CY} Z" fill="rgba(74,91,191,0.05)"/>`;
+  s+=`<path d="M${CX+58} ${CY} A58 58 0 0 1 ${CX-58} ${CY} Z" fill="rgba(160,92,21,0.05)"/>`;
+  const axL=CX-65,axR=CX+65;
+  s+=`<line x1="${axL+4}" y1="${CY}" x2="${axR-4}" y2="${CY}" stroke="#ccc9be" stroke-width="1"/>`;
+  s+=`<polygon points="${axL+4},${CY-2} ${axL},${CY} ${axL+4},${CY+2}" fill="#ccc9be"/>`;
+  s+=`<polygon points="${axR-4},${CY-2} ${axR},${CY} ${axR-4},${CY+2}" fill="#ccc9be"/>`;
+  for(let i=0;i<6;i++){
+    const ca=DIMS[i].a,sa=ca-SP/2,ea=ca+SP/2,score=scores[i];
+    for(let l=0;l<5;l++){
+      s+=`<path d="${arc(R[l],sa,ea)}" fill="none" stroke="${DIMS[i].c}" stroke-width="${SW}" stroke-linecap="round" opacity="${l<score?op:0.08}"/>`;
+    }
+  }
+  s+=`<circle cx="${CX}" cy="${CY}" r="2" fill="#d4d0c8"/>`;
+  return s;
+}
+
+setZone('all');
+
+// ── BUILD CARDS ──
+const carousel=document.getElementById('carousel');
+EXAMPLES.forEach(ex=>{
+  const card=document.createElement('div');
+  card.className='example-card';
+  function rb(idx){
+    const d=DIMS[idx];
+    return`<div class="reason-row"><span class="reason-dim" style="color:${d.c}">${d.n}</span><span class="reason-text">${ex.reasons[idx]}</span></div>`;
+  }
+  card.innerHTML=`
+    <span class="ex-type-tag">${ex.tag}</span>
+    <div class="ex-scenario">${ex.scenario}</div>
+    <span class="reasoning-header">Mike's reasoning</span>
+    <div class="ex-spatial">
+      <div class="spatial-row-teacher">
+        <div class="spatial-teacher-left">${rb(1)}</div>
+        <div class="spatial-teacher-right">${rb(0)}</div>
+      </div>
+      <div class="spatial-row-mid">
+        <div class="spatial-left">${rb(2)}</div>
+        <div class="spatial-chart"><svg viewBox="0 0 210 172" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">${buildChart(ex.s)}</svg></div>
+        <div class="spatial-right">${rb(5)}</div>
+      </div>
+      <div class="spatial-row-exposure">
+        <div class="spatial-exposure-left">${rb(4)}</div>
+        <div class="spatial-exposure-right">${rb(3)}</div>
+      </div>
+    </div>`;
+  carousel.appendChild(card);
+});
+
+// ── NAV — transform slide ──
+const prevBtn=document.getElementById('prev-btn');
+const nextBtn=document.getElementById('next-btn');
+const counter=document.getElementById('nav-counter');
+let current=0;
+
+function updateNav(){
+  counter.textContent=`${current+1} of ${EXAMPLES.length}`;
+  prevBtn.disabled=current===0;
+  nextBtn.disabled=current===EXAMPLES.length-1;
+  carousel.style.transform=`translateX(-${current*100}%)`;
+}
+
+prevBtn.onclick=()=>{ if(current>0){current--;updateNav();} };
+nextBtn.onclick=()=>{ if(current<EXAMPLES.length-1){current++;updateNav();} };
+updateNav();
+</script>
+</body>
+</html>
