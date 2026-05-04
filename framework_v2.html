@@ -178,6 +178,115 @@
   /* ── FOOTER ── */
   footer{margin-top:16px;font-size:11px;color:var(--dim);line-height:1.8;text-align:center}
   footer a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+
+  /* ── CASE STUDY BUTTON ── */
+  .case-study-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:28px;padding:18px 24px;
+    background:var(--card);border:1px solid var(--border);border-radius:12px;
+  }
+  .case-study-bar-text{font-size:13px;color:var(--muted);line-height:1.6;flex:1;margin-right:24px}
+  .case-study-bar-text strong{color:var(--text);font-weight:500}
+  .cs-open-btn{
+    flex-shrink:0;padding:10px 20px;
+    background:var(--text);color:#fff;
+    border:none;border-radius:8px;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+    cursor:pointer;transition:opacity .15s;white-space:nowrap;
+  }
+  .cs-open-btn:hover{opacity:.82}
+
+  /* ── MODAL ── */
+  .cs-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(10,10,8,.55);backdrop-filter:blur(3px);
+    z-index:1000;align-items:center;justify-content:center;padding:28px;
+  }
+  .cs-overlay.open{display:flex}
+  .cs-modal{
+    background:var(--card);border-radius:18px;
+    width:100%;max-width:820px;max-height:92vh;
+    display:flex;flex-direction:column;
+    box-shadow:0 24px 64px rgba(0,0,0,.22);overflow:hidden;
+  }
+
+  /* Tab bar */
+  .cs-tabs{
+    display:flex;align-items:center;gap:0;
+    border-bottom:1px solid var(--border);padding:0 28px;flex-shrink:0;
+  }
+  .cs-tab{
+    padding:16px 20px;border:none;background:transparent;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+    color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+    margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap;
+  }
+  .cs-tab.active{color:var(--text);border-bottom-color:var(--text)}
+  .cs-close{
+    margin-left:auto;padding:10px 14px;border:none;background:transparent;
+    font-size:20px;color:var(--dim);cursor:pointer;line-height:1;
+    border-radius:6px;transition:background .12s;
+  }
+  .cs-close:hover{background:#f2f1ec}
+
+  /* Panel body */
+  .cs-panels{flex:1;overflow-y:auto;min-height:0}
+  .cs-panel{
+    display:none;
+    padding:32px 36px 36px;
+  }
+  .cs-panel.active{display:block}
+
+  /* Content inside panels */
+  .cs-eyebrow{
+    font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--dim);margin-bottom:10px;
+  }
+  .cs-title{
+    font-family:'DM Serif Display',serif;font-size:clamp(20px,3vw,26px);
+    font-weight:400;line-height:1.2;margin-bottom:20px;color:var(--text);
+  }
+  .cs-scenario{
+    font-size:15px;line-height:1.85;color:var(--text);
+    margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border);
+  }
+  .cs-scenario p + p{margin-top:14px}
+
+  /* TLC grid inside modal */
+  .cs-tlc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+  @media(max-width:580px){.cs-tlc{grid-template-columns:1fr}}
+  .cs-zone{border-radius:10px;padding:16px 18px}
+  .cs-zone.t{background:var(--teacher-bg);border:1px solid var(--teacher-border)}
+  .cs-zone.l{background:var(--exposure-bg);border:1px solid var(--exposure-border)}
+  .cs-zone.c{background:var(--traj-bg);border:1px solid var(--border)}
+  .cs-zone-label{
+    font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+    margin-bottom:8px;display:block;
+  }
+  .cs-zone.t .cs-zone-label{color:var(--teacher)}
+  .cs-zone.l .cs-zone-label{color:var(--exposure)}
+  .cs-zone.c .cs-zone-label{color:var(--traj)}
+  .cs-zone-body{font-size:13px;line-height:1.7;color:var(--muted)}
+  .cs-zone-body + .cs-zone-body{margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.07)}
+  .cs-dim-name{font-size:11px;font-weight:600;display:block;margin-bottom:3px}
+  .cs-zone.t .cs-dim-name{color:#7F77DD}
+  .cs-zone.t .cs-dim-name + .cs-dim-name{color:#1D9E75;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.07)}
+
+  .cs-profile{
+    font-size:13px;color:var(--muted);line-height:1.7;
+    padding:14px 18px;background:var(--bg);border-radius:8px;
+    border:1px solid var(--border);
+  }
+  .cs-profile strong{color:var(--text);font-weight:500}
+  .cs-analysis{display:none}
+  .cs-analysis.visible{display:block}
+  .cs-reveal-btn{
+    margin-bottom:20px;padding:9px 18px;
+    border:1px solid var(--border);border-radius:7px;background:transparent;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);
+    cursor:pointer;transition:background .12s,color .12s;
+  }
+  .cs-reveal-btn:hover{background:#f2f1ec;color:var(--text)}
 </style>
 </head>
 <body>
@@ -286,6 +395,120 @@
       <p>A profile full in the upper half and thin in the lower means significant teacher judgment is required and the AI's reach into student experience is limited — the professional is doing the work. Heavy in the lower half with a thin upper means the AI touches instruction, feedback, or assessment directly, while judgment lands on the student rather than the teacher.</p>
       <p><strong>The equator tracks student capacities over time.</strong> Both horizontal dimensions trace what sustained use builds or erodes in students. Whether high or low serves your students depends on your curricular goals.</p>
       <p>The aim is not to encourage AI uses with high totals. It is to surface what a specific use actually asks of teachers and students — so that judgment can be exercised deliberately.</p>
+    </div>
+  </div>
+
+  <!-- ── CASE STUDIES ── -->
+  <div class="case-study-bar">
+    <div class="case-study-bar-text"><strong>See the framework in action.</strong> Two concrete examples — one from English, one from mathematics — show how the same three questions produce very different profiles for very different AI uses.</div>
+    <button class="cs-open-btn" onclick="openCS(0)">View case studies →</button>
+  </div>
+
+  <!-- ── MODAL ── -->
+  <div class="cs-overlay" id="cs-overlay" onclick="overlayClick(event)">
+    <div class="cs-modal">
+      <div class="cs-tabs">
+        <button class="cs-tab active" id="cs-tab-0" onclick="switchCS(0)">Case 1 — The Discussion Guide</button>
+        <button class="cs-tab" id="cs-tab-1" onclick="switchCS(1)">Case 2 — The Justification App</button>
+        <button class="cs-close" onclick="closeCS()">✕</button>
+      </div>
+      <div class="cs-panels">
+
+        <!-- Panel 1 -->
+        <div class="cs-panel active" id="cs-panel-0">
+          <div class="cs-eyebrow">Case study 1 · English</div>
+          <div class="cs-title">The Discussion Guide</div>
+          <div class="cs-scenario">
+            <p>An English teacher is preparing for a class discussion on <em>Beloved</em>. She opens a conversation with ChatGPT and describes the passage students will have read, the grade level, and her learning goal: she wants students to move from surface-level plot questions toward questions about narrative voice and historical memory. She asks ChatGPT to generate a tiered set of discussion questions organized from literal to interpretive to evaluative, then spends twenty minutes working through the output — cutting questions that feel generic, rewriting two that are close but miss the specificity of Morrison's language, and adding three of her own that she knows will resonate with this particular class. Students receive a discussion guide she's authored around the final set of questions.</p>
+          </div>
+          <button class="cs-reveal-btn" onclick="toggleAnalysis(this)">Demonstrate TLC analysis ↓</button>
+          <div class="cs-analysis">
+          <div class="cs-tlc">
+            <div class="cs-zone t">
+              <span class="cs-zone-label">Teacher</span>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name">Deployment judgment</span>
+                Substantial — she had to know what a good discussion question looks like, understand her students, and frame the prompt so that the output was worth editing rather than discarding.
+                <span class="cs-dim-name" style="color:#1D9E75;display:block;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.07)">Teacher in-use agency</span>
+                High throughout. She is the author; the AI is subordinate to her editorial judgment at every step. The final product reflects her knowledge of the text and of her students — neither is replaceable.
+              </div>
+            </div>
+            <div class="cs-zone l">
+              <span class="cs-zone-label">Learner</span>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#BA7517">Proximity to learning</span>
+                Low. Students never encounter the AI.
+              </div>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#378ADD">Student judgment burden</span>
+                Not applicable. The AI's presence in the room is zero.
+              </div>
+            </div>
+            <div class="cs-zone c">
+              <span class="cs-zone-label">Capacities</span>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#3B6D11">Tool fluency</span>
+                Accrues to the teacher, not to students, in this use.
+              </div>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#993C1D">Disciplinary knowledge</span>
+                Served, not bypassed. A teacher who doesn't know <em>Beloved</em> can't edit the questions — knowing the text is what the tool requires of her.
+              </div>
+            </div>
+          </div>
+          <div class="cs-profile"><strong>Profile:</strong> Heavy upper half, negligible lower half. AI in the teacher's workshop. Students experience a better-designed lesson.</div>
+          </div>
+        </div>
+
+        <!-- Panel 2 -->
+        <div class="cs-panel" id="cs-panel-1">
+          <div class="cs-eyebrow">Case study 2 · Mathematics</div>
+          <div class="cs-title">The Justification App</div>
+          <div class="cs-scenario">
+            <p>A calculus teacher wants students to practice rigorous justification for mathematical claims. He builds a structured exercise that combines an interactive graph (Desmos) with a Claude chat window he has designed and constrained himself.</p>
+            <p>During the lesson, the app provides each student with a mathematical claim (from a stored question bank) and asks the student to use a combination of graphical evidence and narrative argument to either justify or refute the claim. The AI acts as a skeptical peer and asks clarifying questions about a student's argument until it is "convinced." Conviction is determined by a rubric available to the AI but hidden from the student. The structure of the app constrains both the input to the AI and the output to the student so that the AI will not directly provide help or answers.</p>
+            <p>When the student has made a defensible case, the student and AI roles are reversed in a subsequent phase, with the AI making intentional mistakes for the student to interrogate. Finally, a third phase asks the student to create a new prompt and decide which context (graphical or narrative) should be provided. These new prompts are stored in the question bank for future iterations of the activity.</p>
+          </div>
+          <button class="cs-reveal-btn" onclick="toggleAnalysis(this)">Demonstrate TLC analysis ↓</button>
+          <div class="cs-analysis">
+          <div class="cs-tlc">
+            <div class="cs-zone t">
+              <span class="cs-zone-label">Teacher</span>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name">Deployment judgment</span>
+                Very high — exercised before students opened the app. The teacher had to understand his students' specific reasoning gaps, design scaffolding that closes those gaps without bypassing them, and build constraints that make the AI behave as needed. That expertise is encoded in the tool itself.
+                <span class="cs-dim-name" style="color:#1D9E75;display:block;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.07)">Teacher in-use agency</span>
+                Lower at run time — the structure does the work. But the structure is his judgment, made durable. His agency was exercised at design; it is present in the architecture.
+              </div>
+            </div>
+            <div class="cs-zone l">
+              <span class="cs-zone-label">Learner</span>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#BA7517">Proximity to learning</span>
+                High. The AI is directly inside the student's reasoning process across all three phases.
+              </div>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#378ADD">Student judgment burden</span>
+                High — but demand by design, not demand by default. The student cannot skip the reasoning; the tool is built to require it.
+              </div>
+            </div>
+            <div class="cs-zone c">
+              <span class="cs-zone-label">Capacities</span>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#3B6D11">Tool fluency</span>
+                Moderate. Students learn to reason with a tool that questions rather than answers — a specific and transferable AI literacy.
+              </div>
+              <div class="cs-zone-body">
+                <span class="cs-dim-name" style="color:#993C1D">Disciplinary knowledge</span>
+                The target. Take the app away — what remains is the argument the student constructed. That is the test.
+              </div>
+            </div>
+          </div>
+          <div class="cs-profile"><strong>Profile:</strong> High across most dimensions, with the lower half active but structured. AI is present in the student experience because the teacher placed it there deliberately, with constraints a general-purpose tool would not have.</div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -595,7 +818,38 @@ function updateNav(){
 
 prevBtn.onclick=()=>{ if(current>0){current--;updateNav();} };
 nextBtn.onclick=()=>{ if(current<EXAMPLES.length-1){current++;updateNav();} };
-updateNav();
+function toggleAnalysis(btn){
+  const analysis=btn.nextElementSibling;
+  const visible=analysis.classList.toggle('visible');
+  btn.textContent=visible?'Hide TLC analysis ↑':'Demonstrate TLC analysis ↓';
+}
+
+// ── CASE STUDY MODAL ──
+function openCS(idx){
+  switchCS(idx);
+  document.getElementById('cs-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeCS(){
+  document.getElementById('cs-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function switchCS(idx){
+  [0,1].forEach(i=>{
+    document.getElementById('cs-panel-'+i).classList.toggle('active',i===idx);
+    document.getElementById('cs-tab-'+i).classList.toggle('active',i===idx);
+  });
+  const panel=document.getElementById('cs-panel-'+idx);
+  if(panel){
+    panel.scrollTop=0;
+    panel.querySelectorAll('.cs-analysis').forEach(a=>a.classList.remove('visible'));
+    panel.querySelectorAll('.cs-reveal-btn').forEach(b=>b.textContent='Demonstrate TLC analysis ↓');
+  }
+}
+function overlayClick(e){
+  if(e.target===document.getElementById('cs-overlay')) closeCS();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCS(); });
 </script>
 </body>
 </html>
